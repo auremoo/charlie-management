@@ -1,0 +1,12 @@
+•  tutos vidéos pour montrer ou sont rangées les croquettes et friandises et quantité à donner 
+•  liste des « taches » donc nourriture, eau, robinet pour boire et câlins à gogo 
+•  la possibilité de partager les photos du bébé cœur par le cat sitter 
+•  liste des points de vigilances : ne pas ouvrir les fenêtres ni la salle de bain avec la plante et attention à la porte en entrant ou sortant
+
+C'est donc pour un chat tu as compris
+
+Claude.md en consequences + readme.md et specs dans un dossier spécial à la racine
+création d'un repos git + gitignore
+
+Appli web légère
+j'attends tes propositions
