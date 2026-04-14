@@ -66,7 +66,7 @@ function CallbackHandler() {
             Erreur de connexion
           </p>
           <a
-            href="/login"
+            href="/charlie-management/login"
             className="text-charlie-500 text-sm font-light underline underline-offset-4 decoration-charlie-200"
           >
             Réessayer
