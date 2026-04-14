@@ -7,7 +7,7 @@ Charlie est la mascotte de l'application.
 ## Stack
 - **Frontend** : Next.js 14, App Router, TypeScript strict, 100% client-side (static export)
 - **Styling** : Tailwind CSS — palette `charlie` (tons chauds terre/luxe)
-- **Backend** : Supabase (auth magic link, PostgreSQL, Storage)
+- **Backend** : Supabase (auth email/password, PostgreSQL, Storage)
 - **Déploiement** : GitHub Pages (via GitHub Actions)
 
 ## Architecture
@@ -25,7 +25,7 @@ Charlie est la mascotte de l'application.
 
 ## Structure des routes
 ```
-/login                          → magic link login
+/login                          → connexion email/mot de passe
 /auth/callback                  → callback Supabase (client-side)
 /onboarding                     → choix : propriétaire ou sitter
 /                               → hub (mes animaux + mes gardes)

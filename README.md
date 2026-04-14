@@ -30,7 +30,7 @@ Charlie est la mascotte de l'application.
 - Le rôle est contextuel par fiche animal, pas global
 
 ### Authentification & sécurité
-- Connexion par magic link (email, sans mot de passe)
+- Connexion par email et mot de passe (inscription / connexion)
 - Protection des routes côté client via hook `useAuth`
 - Row Level Security (RLS) sur toutes les tables Supabase
 - Fonctions SQL `has_pet_access()` et `is_pet_owner()` pour les politiques
@@ -92,7 +92,7 @@ Activer **Settings > Pages** avec source **GitHub Actions**.
 
 ```
 app/
-  login/                → connexion magic link
+  login/                → connexion email/mot de passe
   auth/callback/        → callback Supabase (client-side)
   onboarding/           → choix propriétaire / sitter
   join/                 → saisir un code d'invitation
