@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type { VigilancePoint } from "@/lib/types";
 
@@ -17,19 +18,21 @@ const severityStyle: Record<string, string> = {
 };
 
 export default function OwnerVigilancePage() {
+  const { id: petId } = useParams<{ id: string }>();
   const [points, setPoints] = useState<VigilancePoint[]>([]);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [severity, setSeverity] = useState<"info" | "warning" | "danger">("warning");
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, [petId]);
 
   async function load() {
     const supabase = createClient();
     const { data } = await supabase
       .from("vigilance_points")
       .select("*")
+      .eq("pet_id", petId)
       .order("sort_order");
     setPoints(data ?? []);
   }
@@ -44,6 +47,7 @@ export default function OwnerVigilancePage() {
       description: description.trim() || null,
       severity,
       sort_order: points.length,
+      pet_id: petId,
     });
     setTitle("");
     setDescription("");
@@ -110,7 +114,7 @@ export default function OwnerVigilancePage() {
           disabled={saving}
           className="w-full py-3.5 bg-charlie-900 hover:bg-charlie-800 disabled:bg-charlie-200 text-white text-sm font-medium tracking-wide rounded-full transition-colors"
         >
-          {saving ? "Ajout…" : "Ajouter"}
+          {saving ? "Ajout..." : "Ajouter"}
         </button>
       </form>
 

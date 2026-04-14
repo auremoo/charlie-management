@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import type { Profile } from "@/lib/types";
 import type { User } from "@supabase/supabase-js";
 
-export function useAuth(requiredRole?: "owner") {
+export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -30,17 +30,12 @@ export function useAuth(requiredRole?: "owner") {
         .eq("id", user.id)
         .single();
 
-      if (requiredRole === "owner" && prof?.role !== "owner") {
-        router.replace("/sitter/checklist");
-        return;
-      }
-
       setUser(user);
       setProfile(prof);
       setLoading(false);
     }
     check();
-  }, [requiredRole, router]);
+  }, [router]);
 
   return { user, profile, loading };
 }

@@ -26,32 +26,33 @@ function CallbackHandler() {
         return;
       }
 
+      // Créer profil si premier login (pas de rôle — le rôle est contextuel par pet)
       const { data: existing } = await supabase
         .from("profiles")
-        .select("role")
+        .select("id")
         .eq("id", data.user.id)
         .single();
 
       if (!existing) {
-        const isOwner =
-          data.user.email === process.env.NEXT_PUBLIC_OWNER_EMAIL;
         await supabase.from("profiles").insert({
           id: data.user.id,
-          role: isOwner ? "owner" : "cat_sitter",
           name: data.user.email?.split("@")[0] ?? null,
         });
       }
 
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", data.user.id)
-        .single();
+      // Vérifier si l'utilisateur a déjà des pets ou des gardes
+      const [{ data: ownedPets }, { data: sits }] = await Promise.all([
+        supabase.from("pets").select("id").eq("owner_id", data.user.id).limit(1),
+        supabase.from("pet_sitters").select("id").eq("sitter_id", data.user.id).limit(1),
+      ]);
 
-      if (profile?.role === "owner") {
-        router.replace("/owner");
+      const hasPets = (ownedPets?.length ?? 0) > 0;
+      const hasSits = (sits?.length ?? 0) > 0;
+
+      if (hasPets || hasSits) {
+        router.replace("/");
       } else {
-        router.replace("/sitter/checklist");
+        router.replace("/onboarding");
       }
     }
 

@@ -1,22 +1,28 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type { Task } from "@/lib/types";
 
 const EMOJIS = ["🥣", "💧", "🚿", "🤗", "🐾", "🎾", "🛏️", "💊", "🧹", "🪟"];
 
 export default function OwnerChecklistPage() {
+  const { id: petId } = useParams<{ id: string }>();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [title, setTitle] = useState("");
   const [emoji, setEmoji] = useState("🐾");
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, [petId]);
 
   async function load() {
     const supabase = createClient();
-    const { data } = await supabase.from("tasks").select("*").order("sort_order");
+    const { data } = await supabase
+      .from("tasks")
+      .select("*")
+      .eq("pet_id", petId)
+      .order("sort_order");
     setTasks(data ?? []);
   }
 
@@ -29,6 +35,7 @@ export default function OwnerChecklistPage() {
       title: title.trim(),
       emoji,
       sort_order: tasks.length,
+      pet_id: petId,
     });
     setTitle("");
     setEmoji("🐾");
@@ -87,7 +94,7 @@ export default function OwnerChecklistPage() {
           disabled={saving}
           className="w-full py-3.5 bg-charlie-900 hover:bg-charlie-800 disabled:bg-charlie-200 text-white text-sm font-medium tracking-wide rounded-full transition-colors"
         >
-          {saving ? "Ajout…" : "Ajouter"}
+          {saving ? "Ajout..." : "Ajouter"}
         </button>
       </form>
 

@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type { Task } from "@/lib/types";
 
-export default function ChecklistPage() {
+export default function SitterChecklistPage() {
+  const { id: petId } = useParams<{ id: string }>();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [completions, setCompletions] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
@@ -13,16 +15,28 @@ export default function ChecklistPage() {
   useEffect(() => {
     async function load() {
       const supabase = createClient();
-      const [{ data: t }, { data: c }] = await Promise.all([
-        supabase.from("tasks").select("*").order("sort_order"),
-        supabase.from("task_completions").select("task_id").eq("date", today),
-      ]);
+      const { data: t } = await supabase
+        .from("tasks")
+        .select("*")
+        .eq("pet_id", petId)
+        .order("sort_order");
+
+      const taskIds = (t ?? []).map((task) => task.id);
+
+      if (taskIds.length > 0) {
+        const { data: c } = await supabase
+          .from("task_completions")
+          .select("task_id")
+          .in("task_id", taskIds)
+          .eq("date", today);
+        setCompletions(new Set((c ?? []).map((x: { task_id: string }) => x.task_id)));
+      }
+
       setTasks(t ?? []);
-      setCompletions(new Set((c ?? []).map((x: { task_id: string }) => x.task_id)));
       setLoading(false);
     }
     load();
-  }, [today]);
+  }, [petId, today]);
 
   async function toggle(taskId: string) {
     const supabase = createClient();

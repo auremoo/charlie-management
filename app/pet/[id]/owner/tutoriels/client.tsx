@@ -1,23 +1,26 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type { Tutorial } from "@/lib/types";
 
 export default function OwnerTutorielsPage() {
+  const { id: petId } = useParams<{ id: string }>();
   const [tutorials, setTutorials] = useState<Tutorial[]>([]);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [videoUrl, setVideoUrl] = useState("");
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, [petId]);
 
   async function load() {
     const supabase = createClient();
     const { data } = await supabase
       .from("tutorials")
       .select("*")
+      .eq("pet_id", petId)
       .order("sort_order");
     setTutorials(data ?? []);
   }
@@ -32,6 +35,7 @@ export default function OwnerTutorielsPage() {
       description: description.trim() || null,
       video_url: videoUrl.trim() || null,
       sort_order: tutorials.length,
+      pet_id: petId,
     });
     setTitle("");
     setDescription("");
@@ -89,7 +93,7 @@ export default function OwnerTutorielsPage() {
           disabled={saving}
           className="w-full py-3.5 bg-charlie-900 hover:bg-charlie-800 disabled:bg-charlie-200 text-white text-sm font-medium tracking-wide rounded-full transition-colors"
         >
-          {saving ? "Ajout…" : "Ajouter"}
+          {saving ? "Ajout..." : "Ajouter"}
         </button>
       </form>
 

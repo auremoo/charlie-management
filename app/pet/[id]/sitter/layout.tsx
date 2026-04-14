@@ -1,14 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/lib/hooks/use-auth";
+import type { Pet } from "@/lib/types";
 
-const navItems = [
-  { href: "/sitter/checklist", label: "Tâches", icon: "T" },
-  { href: "/sitter/vigilance", label: "Vigilance", icon: "V" },
-  { href: "/sitter/tutoriels", label: "Guides", icon: "G" },
-  { href: "/sitter/photos", label: "Photos", icon: "P" },
+const getNavItems = (petId: string) => [
+  { href: `/pet/${petId}/sitter`, label: "Tâches", icon: "T" },
+  { href: `/pet/${petId}/sitter/vigilance`, label: "Vigilance", icon: "V" },
+  { href: `/pet/${petId}/sitter/tutoriels`, label: "Guides", icon: "G" },
+  { href: `/pet/${petId}/sitter/photos`, label: "Photos", icon: "P" },
 ];
 
 export default function SitterLayout({
@@ -16,10 +19,25 @@ export default function SitterLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { profile, loading } = useAuth();
+  const { id: petId } = useParams<{ id: string }>();
   const pathname = usePathname();
+  const { profile, loading: authLoading } = useAuth();
+  const [pet, setPet] = useState<Pet | null>(null);
 
-  if (loading) {
+  useEffect(() => {
+    async function load() {
+      const supabase = createClient();
+      const { data } = await supabase
+        .from("pets")
+        .select("*")
+        .eq("id", petId)
+        .single();
+      setPet(data);
+    }
+    if (!authLoading) load();
+  }, [petId, authLoading]);
+
+  if (authLoading || !pet) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="w-5 h-5 rounded-full border-2 border-charlie-300 border-t-charlie-600 animate-spin" />
@@ -27,26 +45,33 @@ export default function SitterLayout({
     );
   }
 
+  const navItems = getNavItems(petId);
+
   return (
     <div className="min-h-screen flex flex-col max-w-lg mx-auto">
-      {/* Header */}
       <header className="glass border-b border-charlie-100/60 px-5 py-4 flex items-center justify-between sticky top-0 z-10">
-        <span className="text-base font-semibold tracking-tight text-charlie-900">
-          Charlie
-        </span>
+        <div className="flex items-center gap-3">
+          <Link href="/" className="text-charlie-300 text-sm">
+            ←
+          </Link>
+          <span className="text-base font-semibold tracking-tight text-charlie-900">
+            {pet.name}
+          </span>
+        </div>
         <span className="text-sm text-charlie-400 font-light">
           {profile?.name ?? ""}
         </span>
       </header>
 
-      {/* Content */}
       <main className="flex-1 px-5 py-6">{children}</main>
 
-      {/* Bottom nav */}
       <nav className="glass border-t border-charlie-100/60 px-4 pt-2 pb-safe sticky bottom-0 z-10">
         <div className="flex justify-around">
           {navItems.map((item) => {
-            const active = pathname.startsWith(item.href);
+            const active =
+              item.href === `/pet/${petId}/sitter`
+                ? pathname === `/pet/${petId}/sitter`
+                : pathname.startsWith(item.href);
             return (
               <Link
                 key={item.href}

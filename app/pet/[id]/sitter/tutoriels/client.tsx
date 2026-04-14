@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type { Tutorial } from "@/lib/types";
 
-export default function TutorielsPage() {
+export default function SitterTutorielsPage() {
+  const { id: petId } = useParams<{ id: string }>();
   const [tutorials, setTutorials] = useState<Tutorial[]>([]);
 
   useEffect(() => {
@@ -13,11 +15,12 @@ export default function TutorielsPage() {
       const { data } = await supabase
         .from("tutorials")
         .select("*")
+        .eq("pet_id", petId)
         .order("sort_order");
       setTutorials(data ?? []);
     }
     load();
-  }, []);
+  }, [petId]);
 
   return (
     <div className="space-y-8">

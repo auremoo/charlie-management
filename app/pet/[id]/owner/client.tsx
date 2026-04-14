@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import Image from "next/image";
 import type { NewsItem, Photo } from "@/lib/types";
 
 export default function OwnerDashboard() {
+  const { id: petId } = useParams<{ id: string }>();
   const [items, setItems] = useState<
     ((Photo & { type: "photo" }) | (NewsItem & { type: "news"; url?: undefined }))[]
   >([]);
@@ -14,8 +16,18 @@ export default function OwnerDashboard() {
     async function load() {
       const supabase = createClient();
       const [{ data: photos }, { data: news }] = await Promise.all([
-        supabase.from("photos").select("*").order("created_at", { ascending: false }).limit(20),
-        supabase.from("news").select("*").order("created_at", { ascending: false }).limit(20),
+        supabase
+          .from("photos")
+          .select("*")
+          .eq("pet_id", petId)
+          .order("created_at", { ascending: false })
+          .limit(20),
+        supabase
+          .from("news")
+          .select("*")
+          .eq("pet_id", petId)
+          .order("created_at", { ascending: false })
+          .limit(20),
       ]);
 
       const all = [
@@ -27,7 +39,7 @@ export default function OwnerDashboard() {
       setItems(all);
     }
     load();
-  }, []);
+  }, [petId]);
 
   return (
     <div className="space-y-8">
@@ -57,7 +69,7 @@ export default function OwnerDashboard() {
                 <div className="relative aspect-[4/3]">
                   <Image
                     src={item.url}
-                    alt={item.caption ?? "Charlie"}
+                    alt={item.caption ?? "Photo"}
                     fill
                     className="object-cover"
                     sizes="(max-width: 640px) 100vw, 512px"

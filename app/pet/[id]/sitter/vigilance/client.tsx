@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type { VigilancePoint } from "@/lib/types";
 
@@ -10,7 +11,8 @@ const severityConfig = {
   info: { bg: "bg-sky-50/60", border: "border-sky-200/60", text: "text-sky-900" },
 };
 
-export default function VigilancePage() {
+export default function SitterVigilancePage() {
+  const { id: petId } = useParams<{ id: string }>();
   const [points, setPoints] = useState<VigilancePoint[]>([]);
 
   useEffect(() => {
@@ -19,11 +21,12 @@ export default function VigilancePage() {
       const { data } = await supabase
         .from("vigilance_points")
         .select("*")
+        .eq("pet_id", petId)
         .order("sort_order");
       setPoints(data ?? []);
     }
     load();
-  }, []);
+  }, [petId]);
 
   return (
     <div className="space-y-8">

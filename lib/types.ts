@@ -1,14 +1,50 @@
-export type Role = "owner" | "cat_sitter";
+// === Profiles ===
 
 export type Profile = {
   id: string;
-  role: Role;
   name: string | null;
   created_at: string;
 };
 
+// === Pets ===
+
+export type Pet = {
+  id: string;
+  name: string;
+  photo_url: string | null;
+  owner_id: string;
+  created_at: string;
+};
+
+export type PetWithRole = Pet & {
+  role: "owner" | "sitter";
+};
+
+// === Pet Sitters ===
+
+export type PetSitter = {
+  id: string;
+  pet_id: string;
+  sitter_id: string;
+  invited_at: string;
+  profiles?: Profile;
+};
+
+// === Invite Codes ===
+
+export type InviteCode = {
+  id: string;
+  pet_id: string;
+  code: string;
+  used_by: string | null;
+  created_at: string;
+};
+
+// === Tasks ===
+
 export type Task = {
   id: string;
+  pet_id: string;
   title: string;
   emoji: string;
   sort_order: number;
@@ -23,8 +59,11 @@ export type TaskCompletion = {
   date: string;
 };
 
+// === Vigilance ===
+
 export type VigilancePoint = {
   id: string;
+  pet_id: string;
   title: string;
   description: string | null;
   severity: "info" | "warning" | "danger";
@@ -32,8 +71,11 @@ export type VigilancePoint = {
   created_at: string;
 };
 
+// === Tutorials ===
+
 export type Tutorial = {
   id: string;
+  pet_id: string;
   title: string;
   description: string | null;
   video_url: string | null;
@@ -41,38 +83,25 @@ export type Tutorial = {
   created_at: string;
 };
 
+// === News ===
+
 export type NewsItem = {
   id: string;
+  pet_id: string;
   content: string;
   author_id: string;
   created_at: string;
   profiles?: Profile;
 };
 
+// === Photos ===
+
 export type Photo = {
   id: string;
+  pet_id: string;
   url: string;
   caption: string | null;
   author_id: string;
   created_at: string;
   profiles?: Profile;
-};
-
-// Type générique pour Supabase (simplifié, sans génération automatique)
-export type Database = {
-  public: {
-    Tables: {
-      profiles: { Row: Profile; Insert: Omit<Profile, "created_at">; Update: Partial<Profile>; Relationships: [] };
-      tasks: { Row: Task; Insert: Omit<Task, "id" | "created_at">; Update: Partial<Task>; Relationships: [] };
-      task_completions: { Row: TaskCompletion; Insert: Omit<TaskCompletion, "id" | "completed_at">; Update: Partial<TaskCompletion>; Relationships: [] };
-      vigilance_points: { Row: VigilancePoint; Insert: Omit<VigilancePoint, "id" | "created_at">; Update: Partial<VigilancePoint>; Relationships: [] };
-      tutorials: { Row: Tutorial; Insert: Omit<Tutorial, "id" | "created_at">; Update: Partial<Tutorial>; Relationships: [] };
-      news: { Row: NewsItem; Insert: Omit<NewsItem, "id" | "created_at">; Update: Partial<NewsItem>; Relationships: [] };
-      photos: { Row: Photo; Insert: Omit<Photo, "id" | "created_at">; Update: Partial<Photo>; Relationships: [] };
-    };
-    Views: Record<string, never>;
-    Functions: Record<string, never>;
-    Enums: Record<string, never>;
-    CompositeTypes: Record<string, never>;
-  };
 };

@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { compressImage } from "@/lib/compress-image";
 import Image from "next/image";
 import type { NewsItem, Photo } from "@/lib/types";
 
-export default function PhotosPage() {
+export default function SitterPhotosPage() {
+  const { id: petId } = useParams<{ id: string }>();
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [news, setNews] = useState<NewsItem[]>([]);
   const [caption, setCaption] = useState("");
@@ -17,13 +19,23 @@ export default function PhotosPage() {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [petId]);
 
   async function loadData() {
     const supabase = createClient();
     const [{ data: p }, { data: n }] = await Promise.all([
-      supabase.from("photos").select("*").order("created_at", { ascending: false }).limit(20),
-      supabase.from("news").select("*").order("created_at", { ascending: false }).limit(10),
+      supabase
+        .from("photos")
+        .select("*")
+        .eq("pet_id", petId)
+        .order("created_at", { ascending: false })
+        .limit(20),
+      supabase
+        .from("news")
+        .select("*")
+        .eq("pet_id", petId)
+        .order("created_at", { ascending: false })
+        .limit(10),
     ]);
     setPhotos(p ?? []);
     setNews(n ?? []);
@@ -52,6 +64,7 @@ export default function PhotosPage() {
         url: publicUrl,
         caption: caption || null,
         author_id: user!.id,
+        pet_id: petId,
       });
       setCaption("");
       await loadData();
@@ -69,6 +82,7 @@ export default function PhotosPage() {
     await supabase.from("news").insert({
       content: message.trim(),
       author_id: user!.id,
+      pet_id: petId,
     });
     setMessage("");
     await loadData();
