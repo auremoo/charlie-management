@@ -6,20 +6,21 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   viewportFit: "cover",
-  themeColor: "#f86c14",
+  themeColor: "#fdfaf7",
 };
 
 export const metadata: Metadata = {
-  title: "Charlie 🐱",
-  description: "Application de cat sitting pour Charlie",
+  title: "Charlie",
+  description: "Cat sitting pour Charlie",
+  manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
-    statusBarStyle: "black-translucent",
+    statusBarStyle: "default",
     title: "Charlie",
   },
   openGraph: {
-    title: "Charlie 🐱",
-    description: "Application de cat sitting pour Charlie",
+    title: "Charlie",
+    description: "Cat sitting pour Charlie",
     images: ["/charlie.jpg"],
   },
   icons: {
@@ -35,7 +36,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="fr">
-      <body className="bg-charlie-50 min-h-screen antialiased font-sans">
+      <body className="bg-charlie-50 min-h-screen font-sans">
         {children}
       </body>
     </html>

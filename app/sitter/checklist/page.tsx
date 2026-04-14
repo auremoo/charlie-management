@@ -53,23 +53,24 @@ export default function ChecklistPage() {
   const doneCount = completions.size;
   const totalCount = tasks.length;
   const allDone = totalCount > 0 && doneCount === totalCount;
+  const progress = totalCount ? (doneCount / totalCount) * 100 : 0;
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-48">
-        <div className="text-charlie-400 text-4xl animate-pulse">🐱</div>
+        <div className="w-5 h-5 rounded-full border-2 border-charlie-300 border-t-charlie-600 animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* En-tête */}
+    <div className="space-y-8">
+      {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-charlie-800">
+        <h1 className="text-xl font-semibold tracking-tight text-charlie-900">
           Tâches du jour
         </h1>
-        <p className="text-gray-500 text-sm mt-1">
+        <p className="text-charlie-400 text-sm font-light mt-1">
           {new Date().toLocaleDateString("fr-FR", {
             weekday: "long",
             day: "numeric",
@@ -78,54 +79,56 @@ export default function ChecklistPage() {
         </p>
       </div>
 
-      {/* Barre de progression */}
-      <div className="bg-white rounded-2xl p-4 shadow-sm space-y-2">
-        <div className="flex justify-between text-sm">
-          <span className="text-gray-600">Progression</span>
-          <span className="font-semibold text-charlie-700">
+      {/* Progress */}
+      <div className="space-y-3">
+        <div className="flex justify-between items-baseline">
+          <span className="text-xs text-charlie-400 font-light uppercase tracking-widest">
+            Progression
+          </span>
+          <span className="text-sm font-medium text-charlie-900 tabular-nums">
             {doneCount}/{totalCount}
           </span>
         </div>
-        <div className="h-3 bg-charlie-100 rounded-full overflow-hidden">
+        <div className="h-1 bg-charlie-100 rounded-full overflow-hidden">
           <div
-            className="h-full bg-charlie-500 rounded-full transition-all duration-500"
-            style={{ width: `${totalCount ? (doneCount / totalCount) * 100 : 0}%` }}
+            className="h-full bg-charlie-900 rounded-full transition-all duration-700 ease-out"
+            style={{ width: `${progress}%` }}
           />
         </div>
         {allDone && (
-          <p className="text-center text-charlie-600 font-medium text-sm pt-1">
-            Tout est fait ! Merci 🎉
+          <p className="text-center text-charlie-500 text-sm font-light pt-2">
+            Tout est fait, merci
           </p>
         )}
       </div>
 
-      {/* Liste des tâches */}
-      <div className="space-y-3">
+      {/* Tasks */}
+      <div className="space-y-2">
         {tasks.map((task) => {
           const done = completions.has(task.id);
           return (
             <button
               key={task.id}
               onClick={() => toggle(task.id)}
-              className={`w-full flex items-center gap-3 sm:gap-4 p-4 rounded-2xl border-2 transition-all text-left active:scale-[0.98] ${
+              className={`w-full flex items-center gap-4 p-4 rounded-2xl transition-all text-left active:scale-[0.98] ${
                 done
-                  ? "bg-charlie-50 border-charlie-300"
-                  : "bg-white border-gray-100 hover:border-charlie-200"
+                  ? "bg-charlie-100/60"
+                  : "bg-white shadow-sm shadow-charlie-100"
               }`}
             >
-              <span className="text-2xl sm:text-3xl">{task.emoji}</span>
+              <span className="text-xl">{task.emoji}</span>
               <span
-                className={`flex-1 font-medium text-base sm:text-lg ${
-                  done ? "line-through text-charlie-400" : "text-gray-800"
+                className={`flex-1 text-sm font-medium transition-colors ${
+                  done ? "line-through text-charlie-300" : "text-charlie-900"
                 }`}
               >
                 {task.title}
               </span>
               <span
-                className={`w-7 h-7 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+                className={`w-5 h-5 rounded-full border flex items-center justify-center flex-shrink-0 transition-all text-[10px] ${
                   done
-                    ? "bg-charlie-500 border-charlie-500 text-white"
-                    : "border-gray-300"
+                    ? "bg-charlie-900 border-charlie-900 text-white"
+                    : "border-charlie-200"
                 }`}
               >
                 {done && "✓"}

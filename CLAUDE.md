@@ -5,15 +5,21 @@ Application web de cat sitting pour Charlie. Deux rôles : `owner` (propriétair
 Flux bidirectionnel : owner configure les consignes, cat sitter envoie photos et nouvelles.
 
 ## Stack
-- **Frontend** : Next.js 14, App Router, TypeScript strict
+- **Frontend** : Next.js 14, App Router, TypeScript strict, 100% client-side (static export)
 - **Styling** : Tailwind CSS — palette `charlie` (orange/ambre chaud)
 - **Backend** : Supabase (auth magic link, PostgreSQL, Storage)
-- **Déploiement** : Vercel
+- **Déploiement** : GitHub Pages (via GitHub Actions)
+
+## Architecture
+- **Static export** (`output: "export"`) — pas de serveur, tout tourne côté navigateur
+- **Pas de middleware** — la protection des routes se fait via le hook `useAuth`
+- **Pas de Server Components** — toutes les pages sont `"use client"`
+- **Sécurité** assurée par les politiques RLS de Supabase côté base de données
 
 ## Structure des routes
 ```
 /login                  → magic link login
-/auth/callback          → callback Supabase
+/auth/callback          → callback Supabase (client-side)
 /sitter/checklist       → tâches (cat sitter)
 /sitter/vigilance       → consignes (lecture)
 /sitter/tutoriels       → tutoriels (lecture)
@@ -25,18 +31,21 @@ Flux bidirectionnel : owner configure les consignes, cat sitter envoie photos et
 ```
 
 ## Fichiers clés
-- `lib/supabase/client.ts` — client browser
-- `lib/supabase/server.ts` — client server (cookies)
-- `middleware.ts` — protection des routes par rôle
+- `lib/supabase/client.ts` — client browser Supabase
+- `lib/hooks/use-auth.ts` — hook d'authentification + protection routes
+- `lib/compress-image.ts` — compression photos côté client avant upload
 - `specs/schema.sql` — schéma DB complet à exécuter dans Supabase
 - `specs/URS.md` — exigences utilisateur
 - `specs/specs.md` — spécifications techniques
+- `.github/workflows/deploy.yml` — déploiement automatique GitHub Pages
 
 ## Variables d'environnement
 Copier `.env.local.example` → `.env.local` et remplir :
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-- `OWNER_EMAIL` — cet email obtient automatiquement le rôle `owner`
+- `NEXT_PUBLIC_OWNER_EMAIL` — cet email obtient automatiquement le rôle `owner`
+
+Pour GitHub Actions, configurer ces mêmes valeurs comme **secrets** du repository.
 
 ## Identité visuelle
 - Favicon et OG image : `public/charlie.jpg` (photo de Charlie)
@@ -46,6 +55,6 @@ Copier `.env.local.example` → `.env.local` et remplir :
 ```bash
 npm install       # installer les dépendances
 npm run dev       # démarrer en local (http://localhost:3000)
-npm run build     # build de production
+npm run build     # build statique (output dans /out) + copie 404.html
 npm run lint      # vérifier le code
 ```

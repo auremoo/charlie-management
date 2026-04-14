@@ -1,66 +1,64 @@
-import { createClient } from "@/lib/supabase/server";
+"use client";
+
+import { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
+import type { VigilancePoint } from "@/lib/types";
 
 const severityConfig = {
-  danger: {
-    bg: "bg-red-50",
-    border: "border-red-200",
-    icon: "🚨",
-    label: "text-red-800",
-  },
-  warning: {
-    bg: "bg-amber-50",
-    border: "border-amber-200",
-    icon: "⚠️",
-    label: "text-amber-800",
-  },
-  info: {
-    bg: "bg-blue-50",
-    border: "border-blue-200",
-    icon: "ℹ️",
-    label: "text-blue-800",
-  },
+  danger: { bg: "bg-red-50/60", border: "border-red-200/60", text: "text-red-900" },
+  warning: { bg: "bg-amber-50/60", border: "border-amber-200/60", text: "text-amber-900" },
+  info: { bg: "bg-sky-50/60", border: "border-sky-200/60", text: "text-sky-900" },
 };
 
-export default async function VigilancePage() {
-  const supabase = await createClient();
-  const { data: points } = await supabase
-    .from("vigilance_points")
-    .select("*")
-    .order("sort_order");
+export default function VigilancePage() {
+  const [points, setPoints] = useState<VigilancePoint[]>([]);
+
+  useEffect(() => {
+    async function load() {
+      const supabase = createClient();
+      const { data } = await supabase
+        .from("vigilance_points")
+        .select("*")
+        .order("sort_order");
+      setPoints(data ?? []);
+    }
+    load();
+  }, []);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-charlie-800">Points de vigilance</h1>
-        <p className="text-gray-500 text-sm mt-1">
-          Choses importantes à ne pas oublier
+        <h1 className="text-xl font-semibold tracking-tight text-charlie-900">
+          Points de vigilance
+        </h1>
+        <p className="text-charlie-400 text-sm font-light mt-1">
+          Consignes importantes
         </p>
       </div>
 
       <div className="space-y-3">
-        {(points ?? []).map((point) => {
+        {points.map((point) => {
           const cfg = severityConfig[point.severity as keyof typeof severityConfig];
           return (
             <div
               key={point.id}
-              className={`rounded-2xl border-2 p-4 space-y-2 ${cfg.bg} ${cfg.border}`}
+              className={`rounded-2xl border p-5 space-y-2 ${cfg.bg} ${cfg.border}`}
             >
-              <div className="flex items-start gap-2">
-                <span className="text-xl flex-shrink-0">{cfg.icon}</span>
-                <span className={`font-semibold text-base ${cfg.label}`}>
-                  {point.title}
-                </span>
-              </div>
+              <p className={`font-medium text-sm ${cfg.text}`}>
+                {point.title}
+              </p>
               {point.description && (
-                <p className="text-gray-700 text-sm pl-8 leading-relaxed">{point.description}</p>
+                <p className="text-charlie-500 text-sm font-light leading-relaxed">
+                  {point.description}
+                </p>
               )}
             </div>
           );
         })}
 
-        {(!points || points.length === 0) && (
-          <p className="text-center text-gray-400 py-12">
-            Aucun point de vigilance pour le moment
+        {points.length === 0 && (
+          <p className="text-center text-charlie-300 py-16 text-sm font-light">
+            Aucun point de vigilance
           </p>
         )}
       </div>

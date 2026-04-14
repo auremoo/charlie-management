@@ -32,11 +32,11 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-5 py-8">
-      <div className="w-full max-w-sm space-y-8">
-        {/* Header */}
-        <div className="text-center space-y-4">
-          <div className="relative w-24 h-24 sm:w-28 sm:h-28 mx-auto rounded-full overflow-hidden border-4 border-charlie-300 shadow-lg">
+    <div className="min-h-screen flex flex-col items-center justify-center px-6 py-12">
+      <div className="w-full max-w-sm space-y-10">
+        {/* Logo */}
+        <div className="text-center space-y-5">
+          <div className="relative w-20 h-20 mx-auto rounded-full overflow-hidden ring-1 ring-charlie-200">
             <Image
               src="/charlie.jpg"
               alt="Charlie"
@@ -46,45 +46,39 @@ export default function LoginPage() {
             />
           </div>
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-charlie-800">Charlie</h1>
-            <p className="text-charlie-600 text-sm mt-1">Cat sitting app</p>
+            <h1 className="text-2xl font-semibold tracking-tight text-charlie-900">
+              Charlie
+            </h1>
+            <p className="text-charlie-400 text-sm font-light mt-1 tracking-wide">
+              Cat sitting
+            </p>
           </div>
         </div>
 
         {/* Card */}
-        <div className="bg-white rounded-2xl shadow-md p-6 sm:p-8 space-y-6">
+        <div className="space-y-6">
           {sent ? (
-            <div className="text-center space-y-3">
-              <div className="text-4xl">📬</div>
-              <h2 className="font-semibold text-charlie-800 text-lg">
-                Vérifie tes emails !
-              </h2>
-              <p className="text-gray-500 text-sm">
-                Un lien de connexion a été envoyé à{" "}
-                <span className="font-medium text-charlie-700">{email}</span>
+            <div className="text-center space-y-4 py-4">
+              <p className="text-sm text-charlie-600 font-light leading-relaxed">
+                Un lien de connexion a été envoyé à
+              </p>
+              <p className="font-medium text-charlie-900">{email}</p>
+              <p className="text-sm text-charlie-400 font-light">
+                Vérifie ta boîte mail
               </p>
               <button
                 onClick={() => setSent(false)}
-                className="text-charlie-500 text-sm underline"
+                className="text-charlie-500 text-sm font-light underline underline-offset-4 decoration-charlie-200 hover:decoration-charlie-400 transition-colors mt-4"
               >
                 Utiliser un autre email
               </button>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <div>
-                <h2 className="font-semibold text-charlie-800 text-lg mb-1">
-                  Connexion
-                </h2>
-                <p className="text-gray-500 text-sm">
-                  Entre ton email — tu recevras un lien magique ✨
-                </p>
-              </div>
-
+            <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
                 <label
                   htmlFor="email"
-                  className="block text-sm font-medium text-gray-700"
+                  className="block text-xs font-medium text-charlie-500 uppercase tracking-widest"
                 >
                   Email
                 </label>
@@ -95,22 +89,20 @@ export default function LoginPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="ton@email.com"
                   required
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-charlie-300 focus:border-transparent text-gray-800 placeholder-gray-400"
+                  className="w-full px-0 py-3 bg-transparent border-0 border-b border-charlie-200 focus:border-charlie-500 focus:outline-none focus:ring-0 text-charlie-900 placeholder-charlie-300 transition-colors"
                 />
               </div>
 
               {error && (
-                <p className="text-red-500 text-sm bg-red-50 px-3 py-2 rounded-lg">
-                  {error}
-                </p>
+                <p className="text-red-500/80 text-sm font-light">{error}</p>
               )}
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3.5 px-4 bg-charlie-500 hover:bg-charlie-600 active:bg-charlie-700 disabled:bg-charlie-300 text-white font-semibold rounded-xl transition-colors"
+                className="w-full py-3.5 bg-charlie-900 hover:bg-charlie-800 disabled:bg-charlie-200 text-white text-sm font-medium tracking-wide rounded-full transition-colors"
               >
-                {loading ? "Envoi en cours…" : "Envoyer le lien ✉️"}
+                {loading ? "Envoi…" : "Continuer"}
               </button>
             </form>
           )}

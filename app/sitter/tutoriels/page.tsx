@@ -1,25 +1,41 @@
-import { createClient } from "@/lib/supabase/server";
+"use client";
 
-export default async function TutorielsPage() {
-  const supabase = await createClient();
-  const { data: tutorials } = await supabase
-    .from("tutorials")
-    .select("*")
-    .order("sort_order");
+import { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
+import type { Tutorial } from "@/lib/types";
+
+export default function TutorielsPage() {
+  const [tutorials, setTutorials] = useState<Tutorial[]>([]);
+
+  useEffect(() => {
+    async function load() {
+      const supabase = createClient();
+      const { data } = await supabase
+        .from("tutorials")
+        .select("*")
+        .order("sort_order");
+      setTutorials(data ?? []);
+    }
+    load();
+  }, []);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-charlie-800">Tutoriels</h1>
-        <p className="text-gray-500 text-sm mt-1">
-          Tout ce que tu dois savoir sur Charlie
+        <h1 className="text-xl font-semibold tracking-tight text-charlie-900">
+          Guides
+        </h1>
+        <p className="text-charlie-400 text-sm font-light mt-1">
+          Tout savoir sur Charlie
         </p>
       </div>
 
       <div className="space-y-4">
-        {(tutorials ?? []).map((tuto) => (
-          <div key={tuto.id} className="bg-white rounded-2xl shadow-sm overflow-hidden">
-            {/* Placeholder vidéo ou player */}
+        {tutorials.map((tuto) => (
+          <div
+            key={tuto.id}
+            className="bg-white rounded-2xl shadow-sm shadow-charlie-100 overflow-hidden"
+          >
             {tuto.video_url ? (
               <div className="aspect-video">
                 <iframe
@@ -30,27 +46,28 @@ export default async function TutorielsPage() {
                 />
               </div>
             ) : (
-              <div className="aspect-video bg-charlie-100 flex flex-col items-center justify-center gap-2">
-                <span className="text-5xl">🎬</span>
-                <span className="text-charlie-600 text-sm font-medium">
+              <div className="aspect-video bg-charlie-100/50 flex items-center justify-center">
+                <span className="text-charlie-200 text-sm font-light">
                   Vidéo à venir
                 </span>
               </div>
             )}
-            <div className="p-4 space-y-1">
-              <h2 className="font-semibold text-charlie-800 text-base">
+            <div className="p-5 space-y-1">
+              <h2 className="font-medium text-sm text-charlie-900">
                 {tuto.title}
               </h2>
               {tuto.description && (
-                <p className="text-gray-600 text-sm">{tuto.description}</p>
+                <p className="text-charlie-400 text-sm font-light leading-relaxed">
+                  {tuto.description}
+                </p>
               )}
             </div>
           </div>
         ))}
 
-        {(!tutorials || tutorials.length === 0) && (
-          <p className="text-center text-gray-400 py-12">
-            Aucun tutoriel pour le moment
+        {tutorials.length === 0 && (
+          <p className="text-center text-charlie-300 py-16 text-sm font-light">
+            Aucun guide pour le moment
           </p>
         )}
       </div>

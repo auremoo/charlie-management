@@ -47,51 +47,60 @@ export default function OwnerTutorielsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-charlie-800">Tutoriels</h1>
-        <p className="text-gray-500 text-sm mt-1">Gérer les guides pour le cat sitter</p>
+        <h1 className="text-xl font-semibold tracking-tight text-charlie-900">
+          Guides
+        </h1>
+        <p className="text-charlie-400 text-sm font-light mt-1">
+          Guides pour le cat sitter
+        </p>
       </div>
 
-      {/* Formulaire */}
-      <form onSubmit={add} className="bg-white rounded-2xl shadow-sm p-4 space-y-3">
-        <h2 className="font-semibold text-charlie-700">➕ Ajouter un tutoriel</h2>
+      {/* Form */}
+      <form onSubmit={add} className="space-y-4">
+        <h2 className="text-xs text-charlie-400 font-medium uppercase tracking-widest">
+          Nouveau guide
+        </h2>
         <input
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="Titre (ex: Où sont les croquettes)"
+          placeholder="Titre"
           required
-          className="w-full px-3 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-charlie-300"
+          className="w-full px-0 py-3 bg-transparent border-0 border-b border-charlie-200 focus:border-charlie-500 focus:outline-none focus:ring-0 text-sm text-charlie-900 placeholder-charlie-300 transition-colors"
         />
         <textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          placeholder="Description (quantités, instructions…)"
+          placeholder="Instructions (optionnel)"
           rows={2}
-          className="w-full px-3 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-charlie-300 resize-none"
+          className="w-full px-0 py-3 bg-transparent border-0 border-b border-charlie-200 focus:border-charlie-500 focus:outline-none focus:ring-0 text-sm text-charlie-900 placeholder-charlie-300 transition-colors resize-none"
         />
         <input
           type="url"
           value={videoUrl}
           onChange={(e) => setVideoUrl(e.target.value)}
           placeholder="URL YouTube (optionnel)"
-          className="w-full px-3 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-charlie-300"
+          className="w-full px-0 py-3 bg-transparent border-0 border-b border-charlie-200 focus:border-charlie-500 focus:outline-none focus:ring-0 text-sm text-charlie-900 placeholder-charlie-300 transition-colors"
         />
         <button
           type="submit"
           disabled={saving}
-          className="w-full py-3 bg-charlie-500 hover:bg-charlie-600 active:bg-charlie-700 disabled:bg-charlie-200 text-white rounded-xl font-semibold transition-colors"
+          className="w-full py-3.5 bg-charlie-900 hover:bg-charlie-800 disabled:bg-charlie-200 text-white text-sm font-medium tracking-wide rounded-full transition-colors"
         >
-          {saving ? "Ajout en cours…" : "Ajouter"}
+          {saving ? "Ajout…" : "Ajouter"}
         </button>
       </form>
 
-      {/* Liste */}
+      {/* List */}
       <div className="space-y-3">
         {tutorials.map((tuto) => (
-          <div key={tuto.id} className="bg-white rounded-2xl shadow-sm overflow-hidden">
-            {tuto.video_url ? (
+          <div
+            key={tuto.id}
+            className="bg-white rounded-2xl shadow-sm shadow-charlie-100 overflow-hidden"
+          >
+            {tuto.video_url && (
               <div className="aspect-video">
                 <iframe
                   src={tuto.video_url.replace("watch?v=", "embed/")}
@@ -100,21 +109,17 @@ export default function OwnerTutorielsPage() {
                   title={tuto.title}
                 />
               </div>
-            ) : (
-              <div className="h-16 bg-charlie-50 flex items-center justify-center">
-                <span className="text-charlie-300 text-2xl">🎬</span>
-              </div>
             )}
-            <div className="p-3 flex items-start gap-3">
-              <div className="flex-1">
-                <p className="font-semibold text-gray-800 text-sm">{tuto.title}</p>
+            <div className="p-4 flex items-start gap-3">
+              <div className="flex-1 space-y-0.5">
+                <p className="text-sm font-medium text-charlie-900">{tuto.title}</p>
                 {tuto.description && (
-                  <p className="text-xs text-gray-500 mt-0.5">{tuto.description}</p>
+                  <p className="text-xs text-charlie-400 font-light">{tuto.description}</p>
                 )}
               </div>
               <button
                 onClick={() => remove(tuto.id)}
-                className="text-gray-300 hover:text-red-400 active:text-red-500 transition-colors text-xl w-10 h-10 flex items-center justify-center flex-shrink-0 -mr-2"
+                className="text-charlie-200 hover:text-red-400 transition-colors text-lg w-8 h-8 flex items-center justify-center flex-shrink-0"
                 aria-label="Supprimer"
               >
                 ×

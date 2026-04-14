@@ -1,58 +1,67 @@
+"use client";
+
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
-import { redirect } from "next/navigation";
+import { usePathname } from "next/navigation";
+import { useAuth } from "@/lib/hooks/use-auth";
 
 const navItems = [
-  { href: "/sitter/checklist", label: "Tâches", emoji: "✅" },
-  { href: "/sitter/vigilance", label: "Vigilance", emoji: "⚠️" },
-  { href: "/sitter/tutoriels", label: "Tutoriels", emoji: "🎬" },
-  { href: "/sitter/photos", label: "Photos", emoji: "📸" },
+  { href: "/sitter/checklist", label: "Tâches", icon: "T" },
+  { href: "/sitter/vigilance", label: "Vigilance", icon: "V" },
+  { href: "/sitter/tutoriels", label: "Guides", icon: "G" },
+  { href: "/sitter/photos", label: "Photos", icon: "P" },
 ];
 
-export default async function SitterLayout({
+export default function SitterLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  const { profile, loading } = useAuth();
+  const pathname = usePathname();
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("name, role")
-    .eq("id", user.id)
-    .single();
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="w-5 h-5 rounded-full border-2 border-charlie-300 border-t-charlie-600 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col max-w-lg mx-auto">
       {/* Header */}
-      <header className="bg-white border-b border-charlie-100 px-4 py-3 flex items-center justify-between sticky top-0 z-10 shadow-sm">
-        <div className="flex items-center gap-2">
-          <span className="text-charlie-500 text-xl">🐱</span>
-          <span className="font-bold text-charlie-800">Charlie</span>
-        </div>
-        <span className="text-sm text-gray-500">
-          Bonjour {profile?.name ?? "!"} 👋
+      <header className="glass border-b border-charlie-100/60 px-5 py-4 flex items-center justify-between sticky top-0 z-10">
+        <span className="text-base font-semibold tracking-tight text-charlie-900">
+          Charlie
+        </span>
+        <span className="text-sm text-charlie-400 font-light">
+          {profile?.name ?? ""}
         </span>
       </header>
 
       {/* Content */}
-      <main className="flex-1 px-4 py-4 sm:px-6">{children}</main>
+      <main className="flex-1 px-5 py-6">{children}</main>
 
-      {/* Bottom nav — touch-friendly with safe area */}
-      <nav className="bg-white border-t border-charlie-100 px-2 pt-1 pb-safe sticky bottom-0 z-10">
+      {/* Bottom nav */}
+      <nav className="glass border-t border-charlie-100/60 px-4 pt-2 pb-safe sticky bottom-0 z-10">
         <div className="flex justify-around">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="flex flex-col items-center gap-0.5 min-w-[3rem] min-h-[3rem] justify-center px-3 py-1.5 rounded-xl active:bg-charlie-100 hover:bg-charlie-50 transition-colors"
-            >
-              <span className="text-2xl">{item.emoji}</span>
-              <span className="text-[11px] text-gray-600">{item.label}</span>
-            </Link>
-          ))}
+          {navItems.map((item) => {
+            const active = pathname.startsWith(item.href);
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`flex flex-col items-center gap-1 min-w-[3rem] py-2 transition-colors ${
+                  active ? "text-charlie-900" : "text-charlie-300"
+                }`}
+              >
+                <span className="text-xs font-semibold tracking-wide">
+                  {item.icon}
+                </span>
+                <span className="text-[10px] font-light">{item.label}</span>
+              </Link>
+            );
+          })}
         </div>
       </nav>
     </div>

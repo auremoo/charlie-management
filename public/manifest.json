@@ -1,0 +1,21 @@
+{
+  "name": "Charlie",
+  "short_name": "Charlie",
+  "description": "Cat sitting pour Charlie",
+  "start_url": "/charlie-management/",
+  "display": "standalone",
+  "background_color": "#fdfaf7",
+  "theme_color": "#fdfaf7",
+  "icons": [
+    {
+      "src": "/charlie.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg"
+    },
+    {
+      "src": "/charlie.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg"
+    }
+  ]
+}

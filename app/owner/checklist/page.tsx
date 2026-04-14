@@ -43,66 +43,69 @@ export default function OwnerChecklistPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-charlie-800">Liste des tâches</h1>
-        <p className="text-gray-500 text-sm mt-1">
-          Gérer les tâches quotidiennes du cat sitter
+        <h1 className="text-xl font-semibold tracking-tight text-charlie-900">
+          Tâches
+        </h1>
+        <p className="text-charlie-400 text-sm font-light mt-1">
+          Tâches quotidiennes du cat sitter
         </p>
       </div>
 
-      {/* Formulaire */}
-      <form onSubmit={add} className="bg-white rounded-2xl shadow-sm p-4 space-y-3">
-        <h2 className="font-semibold text-charlie-700">➕ Ajouter une tâche</h2>
+      {/* Form */}
+      <form onSubmit={add} className="space-y-4">
+        <h2 className="text-xs text-charlie-400 font-medium uppercase tracking-widest">
+          Nouvelle tâche
+        </h2>
         <input
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Nom de la tâche"
           required
-          className="w-full px-3 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-charlie-300"
+          className="w-full px-0 py-3 bg-transparent border-0 border-b border-charlie-200 focus:border-charlie-500 focus:outline-none focus:ring-0 text-sm text-charlie-900 placeholder-charlie-300 transition-colors"
         />
-        <div>
-          <p className="text-xs text-gray-500 mb-2">Emoji</p>
-          <div className="flex flex-wrap gap-2">
-            {EMOJIS.map((e) => (
-              <button
-                key={e}
-                type="button"
-                onClick={() => setEmoji(e)}
-                className={`w-11 h-11 rounded-xl text-xl transition-all active:scale-95 ${
-                  emoji === e
-                    ? "bg-charlie-100 ring-2 ring-charlie-400"
-                    : "bg-gray-50 hover:bg-gray-100"
-                }`}
-              >
-                {e}
-              </button>
-            ))}
-          </div>
+        <div className="flex flex-wrap gap-2">
+          {EMOJIS.map((e) => (
+            <button
+              key={e}
+              type="button"
+              onClick={() => setEmoji(e)}
+              className={`w-10 h-10 rounded-full text-lg transition-all active:scale-95 ${
+                emoji === e
+                  ? "bg-charlie-900 ring-1 ring-charlie-900 ring-offset-2"
+                  : "bg-charlie-100/60 hover:bg-charlie-100"
+              }`}
+            >
+              {e}
+            </button>
+          ))}
         </div>
         <button
           type="submit"
           disabled={saving}
-          className="w-full py-3 bg-charlie-500 hover:bg-charlie-600 active:bg-charlie-700 disabled:bg-charlie-200 text-white rounded-xl font-semibold transition-colors"
+          className="w-full py-3.5 bg-charlie-900 hover:bg-charlie-800 disabled:bg-charlie-200 text-white text-sm font-medium tracking-wide rounded-full transition-colors"
         >
-          {saving ? "Ajout en cours…" : "Ajouter"}
+          {saving ? "Ajout…" : "Ajouter"}
         </button>
       </form>
 
-      {/* Liste */}
-      <div className="space-y-3">
+      {/* List */}
+      <div className="space-y-2">
         {tasks.map((task, i) => (
           <div
             key={task.id}
-            className="bg-white rounded-2xl shadow-sm p-4 flex items-center gap-3"
+            className="bg-white rounded-2xl shadow-sm shadow-charlie-100 p-4 flex items-center gap-4"
           >
-            <span className="text-2xl">{task.emoji}</span>
-            <span className="flex-1 font-medium text-gray-800">{task.title}</span>
-            <span className="text-xs text-gray-300">#{i + 1}</span>
+            <span className="text-xl">{task.emoji}</span>
+            <span className="flex-1 text-sm font-medium text-charlie-900">
+              {task.title}
+            </span>
+            <span className="text-xs text-charlie-200 tabular-nums">{i + 1}</span>
             <button
               onClick={() => remove(task.id)}
-              className="text-gray-300 hover:text-red-400 active:text-red-500 transition-colors text-xl w-10 h-10 flex items-center justify-center flex-shrink-0 -mr-2"
+              className="text-charlie-200 hover:text-red-400 transition-colors text-lg w-8 h-8 flex items-center justify-center flex-shrink-0"
               aria-label="Supprimer"
             >
               ×

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { compressImage } from "@/lib/compress-image";
 import Image from "next/image";
 import type { NewsItem, Photo } from "@/lib/types";
 
@@ -35,11 +36,12 @@ export default function PhotosPage() {
 
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
-    const filename = `${user!.id}/${Date.now()}-${file.name}`;
+    const compressed = await compressImage(file);
+    const filename = `${user!.id}/${Date.now()}-${compressed.name}`;
 
     const { data: uploadData, error } = await supabase.storage
       .from("charlie-photos")
-      .upload(filename, file);
+      .upload(filename, compressed);
 
     if (!error && uploadData) {
       const { data: { publicUrl } } = supabase.storage
@@ -76,31 +78,34 @@ export default function PhotosPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-charlie-800">Photos & nouvelles</h1>
-        <p className="text-gray-500 text-sm mt-1">
-          Envoie des photos et messages à la propriétaire
+        <h1 className="text-xl font-semibold tracking-tight text-charlie-900">
+          Photos & nouvelles
+        </h1>
+        <p className="text-charlie-400 text-sm font-light mt-1">
+          Partager des nouvelles de Charlie
         </p>
       </div>
 
       {/* Upload photo */}
-      <div className="bg-white rounded-2xl shadow-sm p-4 space-y-3">
-        <h2 className="font-semibold text-charlie-700">📸 Envoyer une photo</h2>
+      <div className="space-y-3">
+        <h2 className="text-xs text-charlie-400 font-medium uppercase tracking-widest">
+          Photo
+        </h2>
         <input
           type="text"
           value={caption}
           onChange={(e) => setCaption(e.target.value)}
           placeholder="Légende (optionnel)"
-          className="w-full px-3 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-charlie-300"
+          className="w-full px-0 py-3 bg-transparent border-0 border-b border-charlie-200 focus:border-charlie-500 focus:outline-none focus:ring-0 text-sm text-charlie-900 placeholder-charlie-300 transition-colors"
         />
         <label
-          className={`flex items-center justify-center gap-2 w-full py-4 rounded-xl border-2 border-dashed cursor-pointer transition-colors active:scale-[0.98] ${
+          className={`flex items-center justify-center w-full py-5 rounded-2xl border border-dashed cursor-pointer transition-all active:scale-[0.98] ${
             uploading
-              ? "border-charlie-300 bg-charlie-50 text-charlie-400"
-              : "border-charlie-200 hover:border-charlie-400 text-charlie-600"
+              ? "border-charlie-300 bg-charlie-100/50 text-charlie-400"
+              : "border-charlie-200 hover:border-charlie-400 text-charlie-500"
           }`}
         >
-          <span className="text-2xl">{uploading ? "⏳" : "📷"}</span>
-          <span className="font-medium">
+          <span className="text-sm font-light">
             {uploading ? "Envoi en cours…" : "Choisir une photo"}
           </span>
           <input
@@ -115,35 +120,39 @@ export default function PhotosPage() {
         </label>
       </div>
 
-      {/* Envoyer un message */}
-      <div className="bg-white rounded-2xl shadow-sm p-4 space-y-3">
-        <h2 className="font-semibold text-charlie-700">💬 Envoyer un message</h2>
-        <form onSubmit={sendMessage} className="flex gap-2">
+      {/* Message */}
+      <div className="space-y-3">
+        <h2 className="text-xs text-charlie-400 font-medium uppercase tracking-widest">
+          Message
+        </h2>
+        <form onSubmit={sendMessage} className="flex gap-3">
           <input
             type="text"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            placeholder="Charlie va super bien !"
-            className="flex-1 px-3 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-charlie-300"
+            placeholder="Donner des nouvelles…"
+            className="flex-1 px-0 py-3 bg-transparent border-0 border-b border-charlie-200 focus:border-charlie-500 focus:outline-none focus:ring-0 text-sm text-charlie-900 placeholder-charlie-300 transition-colors"
           />
           <button
             type="submit"
             disabled={sending || !message.trim()}
-            className="px-4 py-2.5 bg-charlie-500 hover:bg-charlie-600 active:bg-charlie-700 disabled:bg-charlie-200 text-white rounded-xl font-medium transition-colors"
+            className="px-5 py-2.5 bg-charlie-900 hover:bg-charlie-800 disabled:bg-charlie-200 text-white text-sm font-medium rounded-full transition-colors flex-shrink-0"
           >
             {sending ? "…" : "Envoyer"}
           </button>
         </form>
       </div>
 
-      {/* News envoyées */}
+      {/* News */}
       {news.length > 0 && (
         <div className="space-y-3">
-          <h2 className="font-semibold text-gray-700">Messages envoyés</h2>
+          <h2 className="text-xs text-charlie-400 font-medium uppercase tracking-widest">
+            Messages envoyés
+          </h2>
           {news.map((n) => (
-            <div key={n.id} className="bg-charlie-50 rounded-xl px-4 py-3">
-              <p className="text-gray-800 text-sm">{n.content}</p>
-              <p className="text-gray-400 text-xs mt-1">
+            <div key={n.id} className="py-3 border-b border-charlie-100 last:border-0">
+              <p className="text-sm text-charlie-900 font-light">{n.content}</p>
+              <p className="text-charlie-300 text-xs font-light mt-1">
                 {new Date(n.created_at).toLocaleString("fr-FR")}
               </p>
             </div>
@@ -151,24 +160,28 @@ export default function PhotosPage() {
         </div>
       )}
 
-      {/* Galerie photos */}
+      {/* Gallery */}
       {photos.length > 0 && (
         <div className="space-y-3">
-          <h2 className="font-semibold text-gray-700">Photos envoyées</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
+          <h2 className="text-xs text-charlie-400 font-medium uppercase tracking-widest">
+            Photos
+          </h2>
+          <div className="grid grid-cols-2 gap-1.5">
             {photos.map((photo) => (
-              <div key={photo.id} className="rounded-xl sm:rounded-2xl overflow-hidden bg-gray-100 shadow-sm">
+              <div key={photo.id} className="rounded-xl overflow-hidden bg-charlie-100">
                 <div className="relative aspect-square">
                   <Image
                     src={photo.url}
-                    alt={photo.caption ?? "Photo de Charlie"}
+                    alt={photo.caption ?? "Charlie"}
                     fill
                     className="object-cover"
                     sizes="(max-width: 640px) 50vw, 33vw"
                   />
                 </div>
                 {photo.caption && (
-                  <p className="text-xs text-gray-600 px-2 py-1.5 truncate">{photo.caption}</p>
+                  <p className="text-xs text-charlie-500 font-light px-2.5 py-2 truncate">
+                    {photo.caption}
+                  </p>
                 )}
               </div>
             ))}
