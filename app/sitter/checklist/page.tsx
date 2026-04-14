@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import type { Task, TaskCompletion } from "@/lib/types";
+import type { Task } from "@/lib/types";
 
 export default function ChecklistPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -18,7 +18,7 @@ export default function ChecklistPage() {
         supabase.from("task_completions").select("task_id").eq("date", today),
       ]);
       setTasks(t ?? []);
-      setCompletions(new Set((c ?? []).map((x: TaskCompletion) => x.task_id)));
+      setCompletions(new Set((c ?? []).map((x: { task_id: string }) => x.task_id)));
       setLoading(false);
     }
     load();
@@ -107,15 +107,15 @@ export default function ChecklistPage() {
             <button
               key={task.id}
               onClick={() => toggle(task.id)}
-              className={`w-full flex items-center gap-4 p-4 rounded-2xl border-2 transition-all text-left ${
+              className={`w-full flex items-center gap-3 sm:gap-4 p-4 rounded-2xl border-2 transition-all text-left active:scale-[0.98] ${
                 done
                   ? "bg-charlie-50 border-charlie-300"
                   : "bg-white border-gray-100 hover:border-charlie-200"
               }`}
             >
-              <span className="text-3xl">{task.emoji}</span>
+              <span className="text-2xl sm:text-3xl">{task.emoji}</span>
               <span
-                className={`flex-1 font-medium text-lg ${
+                className={`flex-1 font-medium text-base sm:text-lg ${
                   done ? "line-through text-charlie-400" : "text-gray-800"
                 }`}
               >

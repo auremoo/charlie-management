@@ -90,23 +90,24 @@ export default function PhotosPage() {
           value={caption}
           onChange={(e) => setCaption(e.target.value)}
           placeholder="Légende (optionnel)"
-          className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-charlie-300"
+          className="w-full px-3 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-charlie-300"
         />
         <label
-          className={`flex items-center justify-center gap-2 w-full py-3 rounded-xl border-2 border-dashed cursor-pointer transition-colors ${
+          className={`flex items-center justify-center gap-2 w-full py-4 rounded-xl border-2 border-dashed cursor-pointer transition-colors active:scale-[0.98] ${
             uploading
               ? "border-charlie-300 bg-charlie-50 text-charlie-400"
               : "border-charlie-200 hover:border-charlie-400 text-charlie-600"
           }`}
         >
-          <span className="text-xl">{uploading ? "⏳" : "📷"}</span>
-          <span className="text-sm font-medium">
+          <span className="text-2xl">{uploading ? "⏳" : "📷"}</span>
+          <span className="font-medium">
             {uploading ? "Envoi en cours…" : "Choisir une photo"}
           </span>
           <input
             ref={fileRef}
             type="file"
             accept="image/*"
+            capture="environment"
             onChange={handlePhotoUpload}
             disabled={uploading}
             className="hidden"
@@ -123,12 +124,12 @@ export default function PhotosPage() {
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Charlie va super bien !"
-            className="flex-1 px-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-charlie-300"
+            className="flex-1 px-3 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-charlie-300"
           />
           <button
             type="submit"
             disabled={sending || !message.trim()}
-            className="px-4 py-2 bg-charlie-500 hover:bg-charlie-600 disabled:bg-charlie-200 text-white rounded-xl text-sm font-medium transition-colors"
+            className="px-4 py-2.5 bg-charlie-500 hover:bg-charlie-600 active:bg-charlie-700 disabled:bg-charlie-200 text-white rounded-xl font-medium transition-colors"
           >
             {sending ? "…" : "Envoyer"}
           </button>
@@ -154,19 +155,20 @@ export default function PhotosPage() {
       {photos.length > 0 && (
         <div className="space-y-3">
           <h2 className="font-semibold text-gray-700">Photos envoyées</h2>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
             {photos.map((photo) => (
-              <div key={photo.id} className="rounded-2xl overflow-hidden bg-gray-100 shadow-sm">
+              <div key={photo.id} className="rounded-xl sm:rounded-2xl overflow-hidden bg-gray-100 shadow-sm">
                 <div className="relative aspect-square">
                   <Image
                     src={photo.url}
                     alt={photo.caption ?? "Photo de Charlie"}
                     fill
                     className="object-cover"
+                    sizes="(max-width: 640px) 50vw, 33vw"
                   />
                 </div>
                 {photo.caption && (
-                  <p className="text-xs text-gray-600 px-2 py-1.5">{photo.caption}</p>
+                  <p className="text-xs text-gray-600 px-2 py-1.5 truncate">{photo.caption}</p>
                 )}
               </div>
             ))}

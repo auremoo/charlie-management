@@ -74,14 +74,14 @@ export default function OwnerVigilancePage() {
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Titre (ex: Fenêtres)"
           required
-          className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-charlie-300"
+          className="w-full px-3 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-charlie-300"
         />
         <textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Description détaillée (optionnel)"
           rows={2}
-          className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-charlie-300 resize-none"
+          className="w-full px-3 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-charlie-300 resize-none"
         />
         <div className="flex gap-2">
           {severities.map((s) => (
@@ -89,7 +89,7 @@ export default function OwnerVigilancePage() {
               key={s.value}
               type="button"
               onClick={() => setSeverity(s.value as typeof severity)}
-              className={`flex-1 py-2 rounded-xl text-sm font-medium border-2 transition-colors ${
+              className={`flex-1 py-2.5 rounded-xl text-sm font-medium border-2 transition-colors active:scale-[0.97] ${
                 severity === s.value
                   ? "border-charlie-500 bg-charlie-50 text-charlie-700"
                   : "border-gray-200 text-gray-500"
@@ -102,7 +102,7 @@ export default function OwnerVigilancePage() {
         <button
           type="submit"
           disabled={saving}
-          className="w-full py-2.5 bg-charlie-500 hover:bg-charlie-600 disabled:bg-charlie-200 text-white rounded-xl text-sm font-semibold transition-colors"
+          className="w-full py-3 bg-charlie-500 hover:bg-charlie-600 active:bg-charlie-700 disabled:bg-charlie-200 text-white rounded-xl font-semibold transition-colors"
         >
           {saving ? "Ajout en cours…" : "Ajouter"}
         </button>
@@ -123,7 +123,8 @@ export default function OwnerVigilancePage() {
             </div>
             <button
               onClick={() => remove(point.id)}
-              className="text-gray-300 hover:text-red-400 transition-colors text-xl"
+              className="text-gray-300 hover:text-red-400 active:text-red-500 transition-colors text-xl w-10 h-10 flex items-center justify-center flex-shrink-0 -mr-2"
+              aria-label="Supprimer"
             >
               ×
             </button>

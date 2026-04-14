@@ -62,13 +62,17 @@ export type Photo = {
 export type Database = {
   public: {
     Tables: {
-      profiles: { Row: Profile; Insert: Omit<Profile, "created_at">; Update: Partial<Profile> };
-      tasks: { Row: Task; Insert: Omit<Task, "id" | "created_at">; Update: Partial<Task> };
-      task_completions: { Row: TaskCompletion; Insert: Omit<TaskCompletion, "id" | "completed_at">; Update: Partial<TaskCompletion> };
-      vigilance_points: { Row: VigilancePoint; Insert: Omit<VigilancePoint, "id" | "created_at">; Update: Partial<VigilancePoint> };
-      tutorials: { Row: Tutorial; Insert: Omit<Tutorial, "id" | "created_at">; Update: Partial<Tutorial> };
-      news: { Row: NewsItem; Insert: Omit<NewsItem, "id" | "created_at">; Update: Partial<NewsItem> };
-      photos: { Row: Photo; Insert: Omit<Photo, "id" | "created_at">; Update: Partial<Photo> };
+      profiles: { Row: Profile; Insert: Omit<Profile, "created_at">; Update: Partial<Profile>; Relationships: [] };
+      tasks: { Row: Task; Insert: Omit<Task, "id" | "created_at">; Update: Partial<Task>; Relationships: [] };
+      task_completions: { Row: TaskCompletion; Insert: Omit<TaskCompletion, "id" | "completed_at">; Update: Partial<TaskCompletion>; Relationships: [] };
+      vigilance_points: { Row: VigilancePoint; Insert: Omit<VigilancePoint, "id" | "created_at">; Update: Partial<VigilancePoint>; Relationships: [] };
+      tutorials: { Row: Tutorial; Insert: Omit<Tutorial, "id" | "created_at">; Update: Partial<Tutorial>; Relationships: [] };
+      news: { Row: NewsItem; Insert: Omit<NewsItem, "id" | "created_at">; Update: Partial<NewsItem>; Relationships: [] };
+      photos: { Row: Photo; Insert: Omit<Photo, "id" | "created_at">; Update: Partial<Photo>; Relationships: [] };
     };
+    Views: Record<string, never>;
+    Functions: Record<string, never>;
+    Enums: Record<string, never>;
+    CompositeTypes: Record<string, never>;
   };
 };

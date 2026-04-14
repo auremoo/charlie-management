@@ -60,7 +60,7 @@ export default function OwnerChecklistPage() {
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Nom de la tâche"
           required
-          className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-charlie-300"
+          className="w-full px-3 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-charlie-300"
         />
         <div>
           <p className="text-xs text-gray-500 mb-2">Emoji</p>
@@ -70,7 +70,7 @@ export default function OwnerChecklistPage() {
                 key={e}
                 type="button"
                 onClick={() => setEmoji(e)}
-                className={`w-10 h-10 rounded-xl text-xl transition-all ${
+                className={`w-11 h-11 rounded-xl text-xl transition-all active:scale-95 ${
                   emoji === e
                     ? "bg-charlie-100 ring-2 ring-charlie-400"
                     : "bg-gray-50 hover:bg-gray-100"
@@ -84,7 +84,7 @@ export default function OwnerChecklistPage() {
         <button
           type="submit"
           disabled={saving}
-          className="w-full py-2.5 bg-charlie-500 hover:bg-charlie-600 disabled:bg-charlie-200 text-white rounded-xl text-sm font-semibold transition-colors"
+          className="w-full py-3 bg-charlie-500 hover:bg-charlie-600 active:bg-charlie-700 disabled:bg-charlie-200 text-white rounded-xl font-semibold transition-colors"
         >
           {saving ? "Ajout en cours…" : "Ajouter"}
         </button>
@@ -102,7 +102,8 @@ export default function OwnerChecklistPage() {
             <span className="text-xs text-gray-300">#{i + 1}</span>
             <button
               onClick={() => remove(task.id)}
-              className="text-gray-300 hover:text-red-400 transition-colors text-xl"
+              className="text-gray-300 hover:text-red-400 active:text-red-500 transition-colors text-xl w-10 h-10 flex items-center justify-center flex-shrink-0 -mr-2"
+              aria-label="Supprimer"
             >
               ×
             </button>
