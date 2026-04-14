@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import Image from "next/image";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -36,13 +35,11 @@ export default function LoginPage() {
       <div className="w-full max-w-sm space-y-10">
         {/* Logo */}
         <div className="text-center space-y-5">
-          <div className="relative w-20 h-20 mx-auto rounded-full overflow-hidden ring-1 ring-charlie-200">
-            <Image
-              src="/charlie.jpg"
+          <div className="w-20 h-20 mx-auto rounded-full overflow-hidden ring-1 ring-charlie-200">
+            <img
+              src="/charlie-management/charlie.jpg"
               alt="Charlie"
-              fill
-              className="object-cover"
-              priority
+              className="w-full h-full object-cover"
             />
           </div>
           <div>

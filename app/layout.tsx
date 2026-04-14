@@ -12,7 +12,7 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   title: "Charlie",
   description: "Cat sitting pour Charlie",
-  manifest: "/manifest.json",
+  manifest: "/charlie-management/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -21,11 +21,11 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Charlie",
     description: "Cat sitting pour Charlie",
-    images: ["/charlie.jpg"],
+    images: ["/charlie-management/charlie.jpg"],
   },
   icons: {
-    icon: "/charlie.jpg",
-    apple: "/charlie.jpg",
+    icon: "/charlie-management/charlie.jpg",
+    apple: "/charlie-management/charlie.jpg",
   },
 };
 
