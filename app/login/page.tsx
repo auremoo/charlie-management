@@ -32,11 +32,11 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6">
+    <div className="min-h-screen flex flex-col items-center justify-center px-5 py-8">
       <div className="w-full max-w-sm space-y-8">
         {/* Header */}
         <div className="text-center space-y-4">
-          <div className="relative w-28 h-28 mx-auto rounded-full overflow-hidden border-4 border-charlie-300 shadow-lg">
+          <div className="relative w-24 h-24 sm:w-28 sm:h-28 mx-auto rounded-full overflow-hidden border-4 border-charlie-300 shadow-lg">
             <Image
               src="/charlie.jpg"
               alt="Charlie"
@@ -46,13 +46,13 @@ export default function LoginPage() {
             />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-charlie-800">Charlie</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-charlie-800">Charlie</h1>
             <p className="text-charlie-600 text-sm mt-1">Cat sitting app</p>
           </div>
         </div>
 
         {/* Card */}
-        <div className="bg-white rounded-2xl shadow-md p-8 space-y-6">
+        <div className="bg-white rounded-2xl shadow-md p-6 sm:p-8 space-y-6">
           {sent ? (
             <div className="text-center space-y-3">
               <div className="text-4xl">📬</div>
@@ -108,7 +108,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 px-4 bg-charlie-500 hover:bg-charlie-600 disabled:bg-charlie-300 text-white font-semibold rounded-xl transition-colors"
+                className="w-full py-3.5 px-4 bg-charlie-500 hover:bg-charlie-600 active:bg-charlie-700 disabled:bg-charlie-300 text-white font-semibold rounded-xl transition-colors"
               >
                 {loading ? "Envoi en cours…" : "Envoyer le lien ✉️"}
               </button>

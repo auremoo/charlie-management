@@ -43,16 +43,16 @@ export default async function VigilancePage() {
           return (
             <div
               key={point.id}
-              className={`rounded-2xl border-2 p-4 space-y-1 ${cfg.bg} ${cfg.border}`}
+              className={`rounded-2xl border-2 p-4 space-y-2 ${cfg.bg} ${cfg.border}`}
             >
-              <div className="flex items-center gap-2">
-                <span className="text-xl">{cfg.icon}</span>
+              <div className="flex items-start gap-2">
+                <span className="text-xl flex-shrink-0">{cfg.icon}</span>
                 <span className={`font-semibold text-base ${cfg.label}`}>
                   {point.title}
                 </span>
               </div>
               {point.description && (
-                <p className="text-gray-700 text-sm pl-8">{point.description}</p>
+                <p className="text-gray-700 text-sm pl-8 leading-relaxed">{point.description}</p>
               )}
             </div>
           );

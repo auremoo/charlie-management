@@ -38,19 +38,19 @@ export default async function SitterLayout({
       </header>
 
       {/* Content */}
-      <main className="flex-1 p-4">{children}</main>
+      <main className="flex-1 px-4 py-4 sm:px-6">{children}</main>
 
-      {/* Bottom nav */}
-      <nav className="bg-white border-t border-charlie-100 px-2 py-2 sticky bottom-0 z-10">
+      {/* Bottom nav — touch-friendly with safe area */}
+      <nav className="bg-white border-t border-charlie-100 px-2 pt-1 pb-safe sticky bottom-0 z-10">
         <div className="flex justify-around">
           {navItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className="flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl hover:bg-charlie-50 transition-colors"
+              className="flex flex-col items-center gap-0.5 min-w-[3rem] min-h-[3rem] justify-center px-3 py-1.5 rounded-xl active:bg-charlie-100 hover:bg-charlie-50 transition-colors"
             >
-              <span className="text-xl">{item.emoji}</span>
-              <span className="text-xs text-gray-600">{item.label}</span>
+              <span className="text-2xl">{item.emoji}</span>
+              <span className="text-[11px] text-gray-600">{item.label}</span>
             </Link>
           ))}
         </div>

@@ -40,6 +40,7 @@ export default async function OwnerDashboard() {
                     alt={item.caption ?? "Photo de Charlie"}
                     fill
                     className="object-cover"
+                    sizes="(max-width: 640px) 100vw, 512px"
                   />
                 </div>
               )}
