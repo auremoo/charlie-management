@@ -30,11 +30,17 @@ export default function LoginPage() {
         return;
       }
       if (data.user) {
-        // Créer le profil
-        await supabase.from("profiles").insert({
-          id: data.user.id,
-          name: email.split("@")[0],
-        });
+        const { error: profileError } = await supabase
+          .from("profiles")
+          .insert({
+            id: data.user.id,
+            name: email.split("@")[0],
+          });
+        if (profileError) {
+          setError(profileError.message);
+          setLoading(false);
+          return;
+        }
         router.replace("/onboarding");
       }
     } else {
