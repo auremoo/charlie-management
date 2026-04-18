@@ -26,6 +26,7 @@ export type PetSitter = {
   id: string;
   pet_id: string;
   sitter_id: string;
+  role: "sitter" | "owner";
   invited_at: string;
   profiles?: Profile;
 };
@@ -36,6 +37,7 @@ export type InviteCode = {
   id: string;
   pet_id: string;
   code: string;
+  role: "sitter" | "owner";
   used_by: string | null;
   created_at: string;
 };

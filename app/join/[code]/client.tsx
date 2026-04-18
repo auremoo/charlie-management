@@ -1,29 +1,30 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { ensureProfile } from "@/lib/ensure-profile";
+
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
 export default function JoinClient() {
   const { code } = useParams<{ code: string }>();
-  const router = useRouter();
   const [error, setError] = useState(false);
 
   useEffect(() => {
     async function join() {
-      const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const user = await ensureProfile();
 
       if (!user) {
-        router.replace("/login");
+        window.location.href = `${basePath}/login`;
         return;
       }
 
+      const supabase = createClient();
+
       const { data: invite } = await supabase
         .from("invite_codes")
-        .select("id, pet_id")
+        .select("id, pet_id, role")
         .eq("code", code)
         .is("used_by", null)
         .single();
@@ -33,9 +34,12 @@ export default function JoinClient() {
         return;
       }
 
+      const role = invite.role || "sitter";
+
       await supabase.from("pet_sitters").insert({
         pet_id: invite.pet_id,
         sitter_id: user.id,
+        role,
       });
 
       await supabase
@@ -43,10 +47,11 @@ export default function JoinClient() {
         .update({ used_by: user.id })
         .eq("id", invite.id);
 
-      router.replace(`/pet/${invite.pet_id}/sitter`);
+      const view = role === "owner" ? "owner" : "sitter";
+      window.location.href = `${basePath}/pet/${invite.pet_id}/${view}`;
     }
     join();
-  }, [code, router]);
+  }, [code]);
 
   if (error) {
     return (
@@ -56,7 +61,7 @@ export default function JoinClient() {
             Code invalide ou déjà utilisé
           </p>
           <a
-            href="/charlie-management/"
+            href={`${basePath}/`}
             className="text-charlie-500 text-sm font-light underline underline-offset-4 decoration-charlie-200"
           >
             Retour

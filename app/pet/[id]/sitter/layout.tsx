@@ -1,11 +1,12 @@
 "use client";
 
-import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/lib/hooks/use-auth";
 import type { Pet } from "@/lib/types";
+
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
 const getNavItems = (petId: string) => [
   { href: `/pet/${petId}/sitter`, label: "Tâches", icon: "T" },
@@ -51,9 +52,9 @@ export default function SitterLayout({
     <div className="min-h-screen flex flex-col max-w-lg mx-auto">
       <header className="glass border-b border-charlie-100/60 px-5 py-4 flex items-center justify-between sticky top-0 z-10">
         <div className="flex items-center gap-3">
-          <Link href="/" className="text-charlie-300 text-sm">
+          <a href={`${basePath}/`} className="text-charlie-300 text-sm">
             ←
-          </Link>
+          </a>
           <span className="text-base font-semibold tracking-tight text-charlie-900">
             {pet.name}
           </span>
@@ -73,10 +74,10 @@ export default function SitterLayout({
                 ? pathname === `/pet/${petId}/sitter`
                 : pathname.startsWith(item.href);
             return (
-              <Link
+              <a
                 key={item.href}
-                href={item.href}
-                className={`flex flex-col items-center gap-1 min-w-[3rem] py-2 transition-colors ${
+                href={`${basePath}${item.href}`}
+                className={`flex flex-col items-center gap-1 min-w-[3rem] min-h-[2.75rem] justify-center py-2 transition-colors ${
                   active ? "text-charlie-900" : "text-charlie-300"
                 }`}
               >
@@ -84,7 +85,7 @@ export default function SitterLayout({
                   {item.icon}
                 </span>
                 <span className="text-[10px] font-light">{item.label}</span>
-              </Link>
+              </a>
             );
           })}
         </div>
