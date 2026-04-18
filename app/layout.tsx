@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import PetRouter from "@/lib/components/pet-router";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -37,7 +38,7 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <body className="bg-charlie-50 min-h-screen font-sans">
-        {children}
+        <PetRouter>{children}</PetRouter>
       </body>
     </html>
   );
