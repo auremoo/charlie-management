@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { usePetId } from "@/lib/hooks/use-pet-id";
 import { createClient } from "@/lib/supabase/client";
 import type { VigilancePoint } from "@/lib/types";
 
@@ -18,7 +18,7 @@ const severityStyle: Record<string, string> = {
 };
 
 export default function OwnerVigilancePage() {
-  const { id: petId } = useParams<{ id: string }>();
+  const petId = usePetId();
   const [points, setPoints] = useState<VigilancePoint[]>([]);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");

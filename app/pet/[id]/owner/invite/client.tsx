@@ -1,14 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { usePetId } from "@/lib/hooks/use-pet-id";
 import { createClient } from "@/lib/supabase/client";
 import type { InviteCode, PetSitter } from "@/lib/types";
 
 type InviteRole = "sitter" | "owner";
 
 export default function InvitePage() {
-  const { id: petId } = useParams<{ id: string }>();
+  const petId = usePetId();
   const [code, setCode] = useState<InviteCode | null>(null);
   const [members, setMembers] = useState<PetSitter[]>([]);
   const [generating, setGenerating] = useState(false);

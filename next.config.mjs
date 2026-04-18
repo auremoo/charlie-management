@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: "export",
+  trailingSlash: true,
   basePath: "/charlie-management",
   images: {
     unoptimized: true,

@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { usePetId } from "@/lib/hooks/use-pet-id";
 import { createClient } from "@/lib/supabase/client";
 import type { Tutorial } from "@/lib/types";
 
 export default function SitterTutorielsPage() {
-  const { id: petId } = useParams<{ id: string }>();
+  const petId = usePetId();
   const [tutorials, setTutorials] = useState<Tutorial[]>([]);
 
   useEffect(() => {

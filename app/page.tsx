@@ -4,12 +4,12 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
-import { usePetNavigation } from "@/lib/hooks/use-pet-navigation";
 import type { Pet } from "@/lib/types";
+
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
 export default function HubPage() {
   const router = useRouter();
-  const { navigateToPet } = usePetNavigation();
   const [ownedPets, setOwnedPets] = useState<Pet[]>([]);
   const [sittingPets, setSittingPets] = useState<Pet[]>([]);
   const [loading, setLoading] = useState(true);
@@ -129,7 +129,7 @@ export default function HubPage() {
           {ownedPets.map((pet) => (
             <button
               key={pet.id}
-              onClick={() => navigateToPet(pet.id, "owner")}
+              onClick={() => window.location.href = `${basePath}/pet?id=${pet.id}&view=owner`}
               className="block w-full text-left bg-white rounded-2xl shadow-sm shadow-charlie-100 p-5 transition-all active:scale-[0.98] hover:shadow-md"
             >
               <p className="text-sm font-medium text-charlie-900">
@@ -152,7 +152,7 @@ export default function HubPage() {
           {sittingPets.map((pet) => (
             <button
               key={pet.id}
-              onClick={() => navigateToPet(pet.id, "sitter")}
+              onClick={() => window.location.href = `${basePath}/pet?id=${pet.id}&view=sitter`}
               className="block w-full text-left bg-white rounded-2xl shadow-sm shadow-charlie-100 p-5 transition-all active:scale-[0.98] hover:shadow-md"
             >
               <p className="text-sm font-medium text-charlie-900">

@@ -48,7 +48,7 @@ export default function JoinClient() {
         .eq("id", invite.id);
 
       const view = role === "owner" ? "owner" : "sitter";
-      window.location.href = `${basePath}/pet/${invite.pet_id}/${view}`;
+      window.location.href = `${basePath}/pet?id=${invite.pet_id}&view=${view}`;
     }
     join();
   }, [code]);

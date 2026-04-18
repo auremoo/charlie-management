@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { usePetId } from "@/lib/hooks/use-pet-id";
 import { createClient } from "@/lib/supabase/client";
 import Image from "next/image";
 import type { NewsItem, Photo } from "@/lib/types";
 
 export default function OwnerDashboard() {
-  const { id: petId } = useParams<{ id: string }>();
+  const petId = usePetId();
   const [items, setItems] = useState<
     ((Photo & { type: "photo" }) | (NewsItem & { type: "news"; url?: undefined }))[]
   >([]);
