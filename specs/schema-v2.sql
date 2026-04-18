@@ -42,6 +42,7 @@ create table pet_sitters (
   id         uuid primary key default uuid_generate_v4(),
   pet_id     uuid not null references pets(id) on delete cascade,
   sitter_id  uuid not null references profiles(id) on delete cascade,
+  role       text not null default 'sitter' check (role in ('sitter', 'owner')),
   invited_at timestamp with time zone default now(),
   unique(pet_id, sitter_id)
 );
@@ -50,6 +51,7 @@ create table invite_codes (
   id         uuid primary key default uuid_generate_v4(),
   pet_id     uuid not null references pets(id) on delete cascade,
   code       text not null unique default substring(uuid_generate_v4()::text from 1 for 8),
+  role       text not null default 'sitter' check (role in ('sitter', 'owner')),
   used_by    uuid references profiles(id),
   created_at timestamp with time zone default now()
 );
@@ -116,7 +118,8 @@ create table photos (
 create or replace function is_pet_owner(p_pet_id uuid)
 returns boolean as $$
 begin
-  return exists (select 1 from pets where id = p_pet_id and owner_id = auth.uid());
+  return exists (select 1 from pets where id = p_pet_id and owner_id = auth.uid())
+      or exists (select 1 from pet_sitters where pet_id = p_pet_id and sitter_id = auth.uid() and role = 'owner');
 end;
 $$ language plpgsql security definer;
 
