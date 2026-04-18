@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { ensureProfile } from "@/lib/ensure-profile";
 import type { Profile } from "@/lib/types";
 import type { User } from "@supabase/supabase-js";
 
@@ -14,23 +15,21 @@ export function useAuth() {
 
   useEffect(() => {
     async function check() {
-      const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const authedUser = await ensureProfile();
 
-      if (!user) {
+      if (!authedUser) {
         router.replace("/login");
         return;
       }
 
+      const supabase = createClient();
       const { data: prof } = await supabase
         .from("profiles")
         .select("*")
-        .eq("id", user.id)
+        .eq("id", authedUser.id)
         .single();
 
-      setUser(user);
+      setUser(authedUser);
       setProfile(prof);
       setLoading(false);
     }
