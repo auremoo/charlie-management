@@ -113,18 +113,24 @@ create table photos (
 -- ÉTAPE 2 : Fonctions helpers
 -- ============================================================
 
-create or replace function has_pet_access(p_pet_id uuid)
-returns boolean as $$
-begin
-  return exists (select 1 from pets where id = p_pet_id and owner_id = auth.uid())
-      or exists (select 1 from pet_sitters where pet_id = p_pet_id and sitter_id = auth.uid());
-end;
-$$ language plpgsql security definer;
-
 create or replace function is_pet_owner(p_pet_id uuid)
 returns boolean as $$
 begin
   return exists (select 1 from pets where id = p_pet_id and owner_id = auth.uid());
+end;
+$$ language plpgsql security definer;
+
+create or replace function is_pet_sitter(p_pet_id uuid)
+returns boolean as $$
+begin
+  return exists (select 1 from pet_sitters where pet_id = p_pet_id and sitter_id = auth.uid());
+end;
+$$ language plpgsql security definer;
+
+create or replace function has_pet_access(p_pet_id uuid)
+returns boolean as $$
+begin
+  return is_pet_owner(p_pet_id) or is_pet_sitter(p_pet_id);
 end;
 $$ language plpgsql security definer;
 
@@ -138,25 +144,19 @@ create policy "profiles_select" on profiles for select using (auth.uid() is not 
 create policy "profiles_insert" on profiles for insert with check (auth.uid() = id);
 create policy "profiles_update" on profiles for update using (auth.uid() = id);
 
--- Pets
+-- Pets (use SECURITY DEFINER functions to avoid circular RLS recursion)
 alter table pets enable row level security;
 create policy "pets_owner_all" on pets for all using (auth.uid() = owner_id);
-create policy "pets_sitter_select" on pets for select using (
-  exists (select 1 from pet_sitters where pet_sitters.pet_id = pets.id and pet_sitters.sitter_id = auth.uid())
-);
+create policy "pets_sitter_select" on pets for select using (is_pet_sitter(id));
 
 -- Pet Sitters
 alter table pet_sitters enable row level security;
-create policy "pet_sitters_owner_all" on pet_sitters for all using (
-  exists (select 1 from pets where pets.id = pet_sitters.pet_id and pets.owner_id = auth.uid())
-);
+create policy "pet_sitters_owner_all" on pet_sitters for all using (is_pet_owner(pet_id));
 create policy "pet_sitters_sitter_select" on pet_sitters for select using (auth.uid() = sitter_id);
 
 -- Invite Codes
 alter table invite_codes enable row level security;
-create policy "invite_codes_owner_all" on invite_codes for all using (
-  exists (select 1 from pets where pets.id = invite_codes.pet_id and pets.owner_id = auth.uid())
-);
+create policy "invite_codes_owner_all" on invite_codes for all using (is_pet_owner(pet_id));
 create policy "invite_codes_read" on invite_codes for select using (auth.uid() is not null);
 
 -- Tasks
