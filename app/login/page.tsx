@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { ensureProfile } from "@/lib/ensure-profile";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -20,7 +21,7 @@ export default function LoginPage() {
     const supabase = createClient();
 
     if (isSignUp) {
-      const { data, error } = await supabase.auth.signUp({
+      const { error } = await supabase.auth.signUp({
         email,
         password,
       });
@@ -29,20 +30,13 @@ export default function LoginPage() {
         setLoading(false);
         return;
       }
-      if (data.user) {
-        const { error: profileError } = await supabase
-          .from("profiles")
-          .insert({
-            id: data.user.id,
-            name: email.split("@")[0],
-          });
-        if (profileError) {
-          setError(profileError.message);
-          setLoading(false);
-          return;
-        }
-        router.replace("/onboarding");
+      const user = await ensureProfile();
+      if (!user) {
+        setError("Impossible de créer le profil. Réessaie.");
+        setLoading(false);
+        return;
       }
+      router.replace("/onboarding");
     } else {
       const { error } = await supabase.auth.signInWithPassword({
         email,
@@ -53,6 +47,7 @@ export default function LoginPage() {
         setLoading(false);
         return;
       }
+      await ensureProfile();
       router.replace("/");
     }
 

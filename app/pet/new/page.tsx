@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { ensureProfile } from "@/lib/ensure-profile";
 
 export default function NewPetPage() {
   const router = useRouter();
@@ -16,10 +17,7 @@ export default function NewPetPage() {
     setSaving(true);
     setError(null);
 
-    const supabase = createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const user = await ensureProfile();
 
     if (!user) {
       setError("Session expirée — reconnecte-toi.");
@@ -27,6 +25,7 @@ export default function NewPetPage() {
       return;
     }
 
+    const supabase = createClient();
     const { data: pet, error: insertError } = await supabase
       .from("pets")
       .insert({ name: name.trim(), owner_id: user.id })
