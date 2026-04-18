@@ -8,22 +8,36 @@ export default function NewPetPage() {
   const router = useRouter();
   const [name, setName] = useState("");
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim()) return;
     setSaving(true);
+    setError(null);
 
     const supabase = createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
 
-    const { data: pet } = await supabase
+    if (!user) {
+      setError("Session expirée — reconnecte-toi.");
+      setSaving(false);
+      return;
+    }
+
+    const { data: pet, error: insertError } = await supabase
       .from("pets")
-      .insert({ name: name.trim(), owner_id: user!.id })
+      .insert({ name: name.trim(), owner_id: user.id })
       .select("id")
       .single();
+
+    if (insertError) {
+      setError(insertError.message);
+      setSaving(false);
+      return;
+    }
 
     if (pet) {
       router.replace(`/pet/${pet.id}/owner`);
@@ -57,6 +71,10 @@ export default function NewPetPage() {
               className="w-full px-0 py-3 bg-transparent border-0 border-b border-charlie-200 focus:border-charlie-500 focus:outline-none focus:ring-0 text-charlie-900 placeholder-charlie-300 transition-colors"
             />
           </div>
+
+          {error && (
+            <p className="text-red-500/80 text-sm font-light">{error}</p>
+          )}
 
           <button
             type="submit"
