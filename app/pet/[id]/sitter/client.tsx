@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { usePetId } from "@/lib/hooks/use-pet-id";
 import { createClient } from "@/lib/supabase/client";
 import type { Task } from "@/lib/types";
 
 export default function SitterChecklistPage() {
-  const { id: petId } = useParams<{ id: string }>();
+  const petId = usePetId();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [completions, setCompletions] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);

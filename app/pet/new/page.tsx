@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { ensureProfile } from "@/lib/ensure-profile";
 
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
+
 export default function NewPetPage() {
-  const router = useRouter();
   const [name, setName] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -39,7 +39,7 @@ export default function NewPetPage() {
     }
 
     if (pet) {
-      router.replace(`/pet/${pet.id}/owner`);
+      window.location.href = `${basePath}/pet?id=${pet.id}&view=owner`;
     }
     setSaving(false);
   }

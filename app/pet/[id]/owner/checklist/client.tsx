@@ -1,14 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { usePetId } from "@/lib/hooks/use-pet-id";
 import { createClient } from "@/lib/supabase/client";
 import type { Task } from "@/lib/types";
 
 const EMOJIS = ["🥣", "💧", "🚿", "🤗", "🐾", "🎾", "🛏️", "💊", "🧹", "🪟"];
 
 export default function OwnerChecklistPage() {
-  const { id: petId } = useParams<{ id: string }>();
+  const petId = usePetId();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [title, setTitle] = useState("");
   const [emoji, setEmoji] = useState("🐾");

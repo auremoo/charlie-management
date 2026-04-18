@@ -1,14 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useParams } from "next/navigation";
+import { usePetId } from "@/lib/hooks/use-pet-id";
 import { createClient } from "@/lib/supabase/client";
 import { compressImage } from "@/lib/compress-image";
 import Image from "next/image";
 import type { NewsItem, Photo } from "@/lib/types";
 
 export default function SitterPhotosPage() {
-  const { id: petId } = useParams<{ id: string }>();
+  const petId = usePetId();
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [news, setNews] = useState<NewsItem[]>([]);
   const [caption, setCaption] = useState("");
