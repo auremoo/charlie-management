@@ -1,9 +1,16 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 
 export default function OnboardingPage() {
   const router = useRouter();
+
+  async function handleLogout() {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.replace("/login");
+  }
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-6 py-12">
@@ -42,6 +49,13 @@ export default function OnboardingPage() {
             </p>
           </button>
         </div>
+
+        <button
+          onClick={handleLogout}
+          className="w-full text-center text-charlie-300 text-sm font-light underline underline-offset-4 decoration-charlie-100 hover:text-charlie-500 transition-colors"
+        >
+          Se déconnecter
+        </button>
       </div>
     </div>
   );
