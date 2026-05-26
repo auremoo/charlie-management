@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { usePetId } from "@/lib/hooks/use-pet-id";
-import { createClient } from "@/lib/supabase/client";
+import { collection, addDoc, deleteDoc, doc, getDocs, query, where } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import type { VigilancePoint } from "@/lib/types";
 
 const severities = [
@@ -28,26 +29,23 @@ export default function OwnerVigilancePage() {
   useEffect(() => { load(); }, [petId]);
 
   async function load() {
-    const supabase = createClient();
-    const { data } = await supabase
-      .from("vigilance_points")
-      .select("*")
-      .eq("pet_id", petId)
-      .order("sort_order");
-    setPoints(data ?? []);
+    const snap = await getDocs(query(collection(db, "vigilance_points"), where("pet_id", "==", petId)));
+    const data = snap.docs.map(d => ({ id: d.id, ...d.data() } as VigilancePoint));
+    data.sort((a, b) => a.sort_order - b.sort_order);
+    setPoints(data);
   }
 
   async function add(e: React.FormEvent) {
     e.preventDefault();
     if (!title.trim()) return;
     setSaving(true);
-    const supabase = createClient();
-    await supabase.from("vigilance_points").insert({
+    await addDoc(collection(db, "vigilance_points"), {
       title: title.trim(),
       description: description.trim() || null,
       severity,
       sort_order: points.length,
       pet_id: petId,
+      created_at: new Date().toISOString(),
     });
     setTitle("");
     setDescription("");
@@ -57,8 +55,7 @@ export default function OwnerVigilancePage() {
   }
 
   async function remove(id: string) {
-    const supabase = createClient();
-    await supabase.from("vigilance_points").delete().eq("id", id);
+    await deleteDoc(doc(db, "vigilance_points", id));
     setPoints((prev) => prev.filter((p) => p.id !== id));
   }
 

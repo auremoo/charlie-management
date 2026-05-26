@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { usePetId } from "@/lib/hooks/use-pet-id";
-import { createClient } from "@/lib/supabase/client";
+import { collection, addDoc, deleteDoc, doc, getDocs, query, where } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import type { Task } from "@/lib/types";
 
 const EMOJIS = ["🥣", "💧", "🚿", "🤗", "🐾", "🎾", "🛏️", "💊", "🧹", "🪟"];
@@ -17,25 +18,22 @@ export default function OwnerChecklistPage() {
   useEffect(() => { load(); }, [petId]);
 
   async function load() {
-    const supabase = createClient();
-    const { data } = await supabase
-      .from("tasks")
-      .select("*")
-      .eq("pet_id", petId)
-      .order("sort_order");
-    setTasks(data ?? []);
+    const snap = await getDocs(query(collection(db, "tasks"), where("pet_id", "==", petId)));
+    const data = snap.docs.map(d => ({ id: d.id, ...d.data() } as Task));
+    data.sort((a, b) => a.sort_order - b.sort_order);
+    setTasks(data);
   }
 
   async function add(e: React.FormEvent) {
     e.preventDefault();
     if (!title.trim()) return;
     setSaving(true);
-    const supabase = createClient();
-    await supabase.from("tasks").insert({
+    await addDoc(collection(db, "tasks"), {
       title: title.trim(),
       emoji,
       sort_order: tasks.length,
       pet_id: petId,
+      created_at: new Date().toISOString(),
     });
     setTitle("");
     setEmoji("🐾");
@@ -44,8 +42,7 @@ export default function OwnerChecklistPage() {
   }
 
   async function remove(id: string) {
-    const supabase = createClient();
-    await supabase.from("tasks").delete().eq("id", id);
+    await deleteDoc(doc(db, "tasks", id));
     setTasks((prev) => prev.filter((t) => t.id !== id));
   }
 

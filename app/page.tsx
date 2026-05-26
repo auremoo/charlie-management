@@ -3,7 +3,9 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/client";
+import { onAuthStateChanged, signOut } from "firebase/auth";
+import { collection, doc, getDocs, getDoc, query, where } from "firebase/firestore";
+import { auth, db } from "@/lib/firebase";
 import type { Pet } from "@/lib/types";
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
@@ -16,62 +18,60 @@ export default function HubPage() {
   const [userName, setUserName] = useState<string | null>(null);
 
   useEffect(() => {
-    async function load() {
-      const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user) {
+    const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
+      unsub();
+      if (!firebaseUser) {
         router.replace("/login");
         return;
       }
+      const uid = firebaseUser.uid;
 
-      const [{ data: owned }, { data: memberOf }, { data: profile }] =
-        await Promise.all([
-          supabase
-            .from("pets")
-            .select("*")
-            .eq("owner_id", user.id)
-            .order("created_at"),
-          supabase
-            .from("pet_sitters")
-            .select("pet_id, role, pets(*)")
-            .eq("sitter_id", user.id),
-          supabase
-            .from("profiles")
-            .select("name")
-            .eq("id", user.id)
-            .single(),
-        ]);
+      const [ownedSnap, memberSnap, profileSnap] = await Promise.all([
+        getDocs(query(collection(db, "pets"), where("owner_id", "==", uid))),
+        getDocs(query(collection(db, "pet_sitters"), where("sitter_id", "==", uid))),
+        getDoc(doc(db, "users", uid)),
+      ]);
 
-      setUserName(profile?.name ?? user.email?.split("@")[0] ?? null);
+      const owned = ownedSnap.docs.map(d => ({ id: d.id, ...d.data() } as Pet));
+      owned.sort((a, b) => a.created_at.localeCompare(b.created_at));
 
-      const ownedIds = new Set((owned ?? []).map((p) => p.id));
-      const coOwned = (memberOf ?? [])
-        .filter(
-          (m) =>
-            (m as unknown as { role: string }).role === "owner" &&
-            !ownedIds.has(m.pet_id)
-        )
-        .map((m) => (m as unknown as { pets: Pet | null }).pets)
-        .filter((p): p is Pet => p !== null);
+      const memberships = memberSnap.docs.map(d => d.data() as { pet_id: string; role: string });
+      const profileData = profileSnap.data() as { name?: string } | undefined;
+      setUserName(profileData?.name ?? firebaseUser.email?.split("@")[0] ?? null);
 
-      setOwnedPets([...(owned ?? []), ...coOwned]);
+      const seenPetIds = new Set<string>();
+      const uniquePetIds = memberships.map(m => m.pet_id).filter(id => {
+        if (seenPetIds.has(id)) return false;
+        seenPetIds.add(id);
+        return true;
+      });
+      const memberPetSnaps = await Promise.all(
+        uniquePetIds.map(pid => getDoc(doc(db, "pets", pid)))
+      );
+      const memberPetMap: Record<string, Pet> = {};
+      memberPetSnaps.forEach(snap => {
+        if (snap.exists()) memberPetMap[snap.id] = { id: snap.id, ...snap.data() } as Pet;
+      });
+
+      const ownedIds = new Set(owned.map(p => p.id));
+      const coOwned = memberships
+        .filter(m => m.role === "owner" && !ownedIds.has(m.pet_id))
+        .map(m => memberPetMap[m.pet_id])
+        .filter((p): p is Pet => !!p);
+
+      setOwnedPets([...owned, ...coOwned]);
       setSittingPets(
-        (memberOf ?? [])
-          .filter((m) => (m as unknown as { role: string }).role !== "owner")
-          .map((s) => (s as unknown as { pets: Pet | null }).pets)
-          .filter((p): p is Pet => p !== null)
+        memberships
+          .filter(m => m.role !== "owner")
+          .map(m => memberPetMap[m.pet_id])
+          .filter((p): p is Pet => !!p)
       );
       setLoading(false);
-    }
-    load();
+    });
   }, [router]);
 
   async function handleLogout() {
-    const supabase = createClient();
-    await supabase.auth.signOut();
+    await signOut(auth);
     router.replace("/login");
   }
 

@@ -2,10 +2,16 @@
 
 import { useEffect, useState } from "react";
 import { usePetId } from "@/lib/hooks/use-pet-id";
-import { createClient } from "@/lib/supabase/client";
-import type { InviteCode, PetSitter } from "@/lib/types";
+import { collection, doc, getDocs, getDoc, setDoc, query, where } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import type { InviteCode, PetSitter, Profile } from "@/lib/types";
 
 type InviteRole = "sitter" | "owner";
+
+function genCode(): string {
+  const chars = "abcdefghjkmnpqrstuvwxyz23456789";
+  return Array.from({ length: 8 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+}
 
 export default function InvitePage() {
   const petId = usePetId();
@@ -19,30 +25,40 @@ export default function InvitePage() {
   }, [petId]);
 
   async function load() {
-    const supabase = createClient();
-    const [{ data: codes }, { data: s }] = await Promise.all([
-      supabase
-        .from("invite_codes")
-        .select("*")
-        .eq("pet_id", petId)
-        .is("used_by", null)
-        .order("created_at", { ascending: false })
-        .limit(1),
-      supabase
-        .from("pet_sitters")
-        .select("*, profiles(*)")
-        .eq("pet_id", petId),
+    const [codesSnap, sittersSnap] = await Promise.all([
+      getDocs(query(collection(db, "invite_codes"), where("pet_id", "==", petId))),
+      getDocs(query(collection(db, "pet_sitters"), where("pet_id", "==", petId))),
     ]);
-    setCode(codes?.[0] ?? null);
-    setMembers(s ?? []);
+
+    const unusedCodes = codesSnap.docs
+      .map(d => ({ id: d.id, ...d.data() } as InviteCode))
+      .filter(c => !c.used_by)
+      .sort((a, b) => b.created_at.localeCompare(a.created_at));
+    setCode(unusedCodes[0] ?? null);
+
+    const sitters = sittersSnap.docs.map(d => ({ id: d.id, ...d.data() } as PetSitter));
+    const sittersWithProfiles = await Promise.all(
+      sitters.map(async (sitter) => {
+        const profileSnap = await getDoc(doc(db, "users", sitter.sitter_id));
+        return {
+          ...sitter,
+          profiles: profileSnap.exists() ? (profileSnap.data() as Profile) : undefined,
+        };
+      })
+    );
+    setMembers(sittersWithProfiles);
   }
 
   async function generateCode() {
     setGenerating(true);
-    const supabase = createClient();
-    await supabase
-      .from("invite_codes")
-      .insert({ pet_id: petId, role: inviteRole });
+    const newCode = genCode();
+    await setDoc(doc(db, "invite_codes", newCode), {
+      code: newCode,
+      pet_id: petId,
+      role: inviteRole,
+      used_by: null,
+      created_at: new Date().toISOString(),
+    });
     await load();
     setGenerating(false);
   }

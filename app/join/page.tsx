@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
+import { auth, db } from "@/lib/firebase";
+import type { InviteCode } from "@/lib/types";
 
 export default function JoinPage() {
   const router = useRouter();
@@ -16,36 +18,31 @@ export default function JoinPage() {
     setJoining(true);
     setError(null);
 
-    const supabase = createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const user = auth.currentUser;
+    if (!user) {
+      setError("Session expirée — reconnecte-toi.");
+      setJoining(false);
+      return;
+    }
 
-    // Trouver le code
-    const { data: invite } = await supabase
-      .from("invite_codes")
-      .select("id, pet_id")
-      .eq("code", code.trim())
-      .is("used_by", null)
-      .single();
-
-    if (!invite) {
+    const inviteSnap = await getDoc(doc(db, "invite_codes", code.trim()));
+    if (!inviteSnap.exists() || inviteSnap.data().used_by) {
       setError("Code invalide ou déjà utilisé");
       setJoining(false);
       return;
     }
 
-    // Créer la relation sitter
-    await supabase.from("pet_sitters").insert({
+    const invite = inviteSnap.data() as InviteCode;
+    const sittersRef = doc(db, "pet_sitters", `${invite.pet_id}_${user.uid}`);
+    await setDoc(sittersRef, {
+      id: `${invite.pet_id}_${user.uid}`,
       pet_id: invite.pet_id,
-      sitter_id: user!.id,
+      sitter_id: user.uid,
+      role: "sitter",
+      invited_at: new Date().toISOString(),
     });
 
-    // Marquer le code comme utilisé
-    await supabase
-      .from("invite_codes")
-      .update({ used_by: user!.id })
-      .eq("id", invite.id);
+    await updateDoc(doc(db, "invite_codes", code.trim()), { used_by: user.uid });
 
     router.replace(`/pet/${invite.pet_id}/sitter`);
   }

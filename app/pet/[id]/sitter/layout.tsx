@@ -3,7 +3,8 @@
 import { useSearchParams } from "next/navigation";
 import { usePetId } from "@/lib/hooks/use-pet-id";
 import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import { useAuth } from "@/lib/hooks/use-auth";
 import type { Pet } from "@/lib/types";
 
@@ -34,13 +35,8 @@ export default function SitterLayout({
 
   useEffect(() => {
     async function load() {
-      const supabase = createClient();
-      const { data } = await supabase
-        .from("pets")
-        .select("*")
-        .eq("id", petId)
-        .single();
-      setPet(data);
+      const snap = await getDoc(doc(db, "pets", petId));
+      if (snap.exists()) setPet({ id: snap.id, ...snap.data() } as Pet);
     }
     if (!authLoading && petId) load();
   }, [petId, authLoading]);

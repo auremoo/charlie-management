@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { collection, addDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import { ensureProfile } from "@/lib/ensure-profile";
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
@@ -18,30 +19,24 @@ export default function NewPetPage() {
     setError(null);
 
     const user = await ensureProfile();
-
     if (!user) {
       setError("Session expirée — reconnecte-toi.");
       setSaving(false);
       return;
     }
 
-    const supabase = createClient();
-    const { data: pet, error: insertError } = await supabase
-      .from("pets")
-      .insert({ name: name.trim(), owner_id: user.id })
-      .select("id")
-      .single();
-
-    if (insertError) {
-      setError(insertError.message);
+    try {
+      const docRef = await addDoc(collection(db, "pets"), {
+        name: name.trim(),
+        owner_id: user.uid,
+        photo_url: null,
+        created_at: new Date().toISOString(),
+      });
+      window.location.href = `${basePath}/pet?id=${docRef.id}&view=owner`;
+    } catch (err: unknown) {
+      setError((err as { message?: string })?.message ?? "Erreur lors de la création.");
       setSaving(false);
-      return;
     }
-
-    if (pet) {
-      window.location.href = `${basePath}/pet?id=${pet.id}&view=owner`;
-    }
-    setSaving(false);
   }
 
   return (

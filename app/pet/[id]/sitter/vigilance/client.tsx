@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { usePetId } from "@/lib/hooks/use-pet-id";
-import { createClient } from "@/lib/supabase/client";
+import { collection, getDocs, query, where } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import type { VigilancePoint } from "@/lib/types";
 
 const severityConfig = {
@@ -17,13 +18,12 @@ export default function SitterVigilancePage() {
 
   useEffect(() => {
     async function load() {
-      const supabase = createClient();
-      const { data } = await supabase
-        .from("vigilance_points")
-        .select("*")
-        .eq("pet_id", petId)
-        .order("sort_order");
-      setPoints(data ?? []);
+      const snap = await getDocs(
+        query(collection(db, "vigilance_points"), where("pet_id", "==", petId))
+      );
+      const data = snap.docs.map(d => ({ id: d.id, ...d.data() } as VigilancePoint));
+      data.sort((a, b) => a.sort_order - b.sort_order);
+      setPoints(data);
     }
     load();
   }, [petId]);

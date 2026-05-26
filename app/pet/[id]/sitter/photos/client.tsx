@@ -2,8 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import { usePetId } from "@/lib/hooks/use-pet-id";
-import { createClient } from "@/lib/supabase/client";
+import { collection, addDoc, getDocs, query, where } from "firebase/firestore";
+import { ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage";
+import { auth, db, storage } from "@/lib/firebase";
 import { compressImage } from "@/lib/compress-image";
+import { checkStorageQuota, addStorageUsage } from "@/lib/storage-quota";
 import Image from "next/image";
 import type { NewsItem, Photo } from "@/lib/types";
 
@@ -22,23 +25,18 @@ export default function SitterPhotosPage() {
   }, [petId]);
 
   async function loadData() {
-    const supabase = createClient();
-    const [{ data: p }, { data: n }] = await Promise.all([
-      supabase
-        .from("photos")
-        .select("*")
-        .eq("pet_id", petId)
-        .order("created_at", { ascending: false })
-        .limit(20),
-      supabase
-        .from("news")
-        .select("*")
-        .eq("pet_id", petId)
-        .order("created_at", { ascending: false })
-        .limit(10),
+    const [photosSnap, newsSnap] = await Promise.all([
+      getDocs(query(collection(db, "photos"), where("pet_id", "==", petId))),
+      getDocs(query(collection(db, "news"), where("pet_id", "==", petId))),
     ]);
-    setPhotos(p ?? []);
-    setNews(n ?? []);
+
+    const p = photosSnap.docs.map(d => ({ id: d.id, ...d.data() } as Photo));
+    p.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    setPhotos(p.slice(0, 20));
+
+    const n = newsSnap.docs.map(d => ({ id: d.id, ...d.data() } as NewsItem));
+    n.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    setNews(n.slice(0, 10));
   }
 
   async function handlePhotoUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -46,29 +44,34 @@ export default function SitterPhotosPage() {
     if (!file) return;
     setUploading(true);
 
-    const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const allowed = await checkStorageQuota();
+    if (!allowed) {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
+      alert("Espace de stockage plein — impossible d'envoyer de nouvelles photos.");
+      return;
+    }
+
+    const uid = auth.currentUser?.uid ?? "unknown";
     const compressed = await compressImage(file);
-    const filename = `${user!.id}/${Date.now()}-${compressed.name}`;
+    const path = `charlie-photos/${uid}/${Date.now()}-${compressed.name}`;
+    const fileRef2 = storageRef(storage, path);
 
-    const { data: uploadData, error } = await supabase.storage
-      .from("charlie-photos")
-      .upload(filename, compressed);
+    await uploadBytes(fileRef2, compressed);
+    const publicUrl = await getDownloadURL(fileRef2);
 
-    if (!error && uploadData) {
-      const { data: { publicUrl } } = supabase.storage
-        .from("charlie-photos")
-        .getPublicUrl(uploadData.path);
-
-      await supabase.from("photos").insert({
+    await Promise.all([
+      addDoc(collection(db, "photos"), {
         url: publicUrl,
         caption: caption || null,
-        author_id: user!.id,
+        author_id: uid,
         pet_id: petId,
-      });
-      setCaption("");
-      await loadData();
-    }
+        created_at: new Date().toISOString(),
+      }),
+      addStorageUsage(compressed.size),
+    ]);
+    setCaption("");
+    await loadData();
     setUploading(false);
     if (fileRef.current) fileRef.current.value = "";
   }
@@ -77,12 +80,12 @@ export default function SitterPhotosPage() {
     e.preventDefault();
     if (!message.trim()) return;
     setSending(true);
-    const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    await supabase.from("news").insert({
+    const uid = auth.currentUser?.uid ?? "unknown";
+    await addDoc(collection(db, "news"), {
       content: message.trim(),
-      author_id: user!.id,
+      author_id: uid,
       pet_id: petId,
+      created_at: new Date().toISOString(),
     });
     setMessage("");
     await loadData();

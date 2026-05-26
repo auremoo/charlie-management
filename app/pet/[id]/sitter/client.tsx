@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { usePetId } from "@/lib/hooks/use-pet-id";
-import { createClient } from "@/lib/supabase/client";
+import { collection, doc, getDocs, setDoc, deleteDoc, query, where } from "firebase/firestore";
+import { auth, db } from "@/lib/firebase";
 import type { Task } from "@/lib/types";
 
 export default function SitterChecklistPage() {
@@ -14,50 +15,44 @@ export default function SitterChecklistPage() {
 
   useEffect(() => {
     async function load() {
-      const supabase = createClient();
-      const { data: t } = await supabase
-        .from("tasks")
-        .select("*")
-        .eq("pet_id", petId)
-        .order("sort_order");
+      const snap = await getDocs(
+        query(collection(db, "tasks"), where("pet_id", "==", petId))
+      );
+      const taskList = snap.docs.map(d => ({ id: d.id, ...d.data() } as Task));
+      taskList.sort((a, b) => a.sort_order - b.sort_order);
 
-      const taskIds = (t ?? []).map((task) => task.id);
-
-      if (taskIds.length > 0) {
-        const { data: c } = await supabase
-          .from("task_completions")
-          .select("task_id")
-          .in("task_id", taskIds)
-          .eq("date", today);
-        setCompletions(new Set((c ?? []).map((x: { task_id: string }) => x.task_id)));
-      }
-
-      setTasks(t ?? []);
+      const completionChecks = await Promise.all(
+        taskList.map(async (task) => {
+          const compDoc = await import("firebase/firestore").then(({ getDoc }) =>
+            getDoc(doc(db, "task_completions", `${task.id}_${today}`))
+          );
+          return compDoc.exists() ? task.id : null;
+        })
+      );
+      setCompletions(new Set(completionChecks.filter(Boolean) as string[]));
+      setTasks(taskList);
       setLoading(false);
     }
     load();
   }, [petId, today]);
 
   async function toggle(taskId: string) {
-    const supabase = createClient();
     const isDone = completions.has(taskId);
+    const compId = `${taskId}_${today}`;
 
     if (isDone) {
-      await supabase
-        .from("task_completions")
-        .delete()
-        .eq("task_id", taskId)
-        .eq("date", today);
+      await deleteDoc(doc(db, "task_completions", compId));
       setCompletions((prev) => {
         const next = new Set(prev);
         next.delete(taskId);
         return next;
       });
     } else {
-      const { data: { user } } = await supabase.auth.getUser();
-      await supabase.from("task_completions").insert({
+      const uid = auth.currentUser?.uid ?? "";
+      await setDoc(doc(db, "task_completions", compId), {
         task_id: taskId,
-        completed_by: user!.id,
+        completed_by: uid,
+        completed_at: new Date().toISOString(),
         date: today,
       });
       setCompletions((prev) => new Set(prev).add(taskId));

@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { usePetId } from "@/lib/hooks/use-pet-id";
-import { createClient } from "@/lib/supabase/client";
+import { collection, addDoc, deleteDoc, doc, getDocs, query, where } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import type { Tutorial } from "@/lib/types";
 
 export default function OwnerTutorielsPage() {
@@ -16,26 +17,23 @@ export default function OwnerTutorielsPage() {
   useEffect(() => { load(); }, [petId]);
 
   async function load() {
-    const supabase = createClient();
-    const { data } = await supabase
-      .from("tutorials")
-      .select("*")
-      .eq("pet_id", petId)
-      .order("sort_order");
-    setTutorials(data ?? []);
+    const snap = await getDocs(query(collection(db, "tutorials"), where("pet_id", "==", petId)));
+    const data = snap.docs.map(d => ({ id: d.id, ...d.data() } as Tutorial));
+    data.sort((a, b) => a.sort_order - b.sort_order);
+    setTutorials(data);
   }
 
   async function add(e: React.FormEvent) {
     e.preventDefault();
     if (!title.trim()) return;
     setSaving(true);
-    const supabase = createClient();
-    await supabase.from("tutorials").insert({
+    await addDoc(collection(db, "tutorials"), {
       title: title.trim(),
       description: description.trim() || null,
       video_url: videoUrl.trim() || null,
       sort_order: tutorials.length,
       pet_id: petId,
+      created_at: new Date().toISOString(),
     });
     setTitle("");
     setDescription("");
@@ -45,8 +43,7 @@ export default function OwnerTutorielsPage() {
   }
 
   async function remove(id: string) {
-    const supabase = createClient();
-    await supabase.from("tutorials").delete().eq("id", id);
+    await deleteDoc(doc(db, "tutorials", id));
     setTutorials((prev) => prev.filter((t) => t.id !== id));
   }
 

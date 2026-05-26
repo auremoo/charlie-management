@@ -2,8 +2,12 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
-import { ensureProfile } from "@/lib/ensure-profile";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+} from "firebase/auth";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { auth, db } from "@/lib/firebase";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -18,39 +22,31 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
 
-    const supabase = createClient();
-
-    if (isSignUp) {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-      });
-      if (error) {
-        setError(error.message);
-        setLoading(false);
-        return;
+    try {
+      if (isSignUp) {
+        const { user } = await createUserWithEmailAndPassword(auth, email, password);
+        await setDoc(doc(db, "users", user.uid), {
+          id: user.uid,
+          name: email.split("@")[0],
+          created_at: new Date().toISOString(),
+        });
+        router.replace("/onboarding");
+      } else {
+        const { user } = await signInWithEmailAndPassword(auth, email, password);
+        const snap = await getDoc(doc(db, "users", user.uid));
+        if (!snap.exists()) {
+          await setDoc(doc(db, "users", user.uid), {
+            id: user.uid,
+            name: email.split("@")[0],
+            created_at: new Date().toISOString(),
+          });
+        }
+        router.replace("/");
       }
-      const user = await ensureProfile();
-      if (!user) {
-        setError("Impossible de créer le profil. Réessaie.");
-        setLoading(false);
-        return;
-      }
-      router.replace("/onboarding");
-    } else {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      if (error) {
-        setError(error.message);
-        setLoading(false);
-        return;
-      }
-      await ensureProfile();
-      router.replace("/");
+    } catch (err: unknown) {
+      const msg = (err as { message?: string })?.message ?? "Erreur inconnue";
+      setError(msg.replace("Firebase: ", "").replace(/\(auth\/[^)]+\)\.?/, "").trim());
     }
-
     setLoading(false);
   }
 

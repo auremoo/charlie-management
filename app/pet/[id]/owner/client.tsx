@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { usePetId } from "@/lib/hooks/use-pet-id";
-import { createClient } from "@/lib/supabase/client";
+import { collection, getDocs, query, where } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import Image from "next/image";
 import type { NewsItem, Photo } from "@/lib/types";
 
@@ -14,29 +15,21 @@ export default function OwnerDashboard() {
 
   useEffect(() => {
     async function load() {
-      const supabase = createClient();
-      const [{ data: photos }, { data: news }] = await Promise.all([
-        supabase
-          .from("photos")
-          .select("*")
-          .eq("pet_id", petId)
-          .order("created_at", { ascending: false })
-          .limit(20),
-        supabase
-          .from("news")
-          .select("*")
-          .eq("pet_id", petId)
-          .order("created_at", { ascending: false })
-          .limit(20),
+      const [photosSnap, newsSnap] = await Promise.all([
+        getDocs(query(collection(db, "photos"), where("pet_id", "==", petId))),
+        getDocs(query(collection(db, "news"), where("pet_id", "==", petId))),
       ]);
 
+      const photos = photosSnap.docs.map(d => ({ id: d.id, ...d.data() } as Photo));
+      const news = newsSnap.docs.map(d => ({ id: d.id, ...d.data() } as NewsItem));
+
       const all = [
-        ...(photos ?? []).map((p) => ({ type: "photo" as const, ...p })),
-        ...(news ?? []).map((n) => ({ type: "news" as const, ...n, url: undefined })),
+        ...photos.map(p => ({ type: "photo" as const, ...p })),
+        ...news.map(n => ({ type: "news" as const, ...n, url: undefined })),
       ].sort(
         (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       );
-      setItems(all);
+      setItems(all.slice(0, 20));
     }
     load();
   }, [petId]);

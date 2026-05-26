@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import { ensureProfile } from "@/lib/ensure-profile";
+import type { InviteCode } from "@/lib/types";
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
@@ -14,38 +16,29 @@ export default function JoinClient() {
   useEffect(() => {
     async function join() {
       const user = await ensureProfile();
-
       if (!user) {
         window.location.href = `${basePath}/login`;
         return;
       }
 
-      const supabase = createClient();
-
-      const { data: invite } = await supabase
-        .from("invite_codes")
-        .select("id, pet_id, role")
-        .eq("code", code)
-        .is("used_by", null)
-        .single();
-
-      if (!invite) {
+      const inviteSnap = await getDoc(doc(db, "invite_codes", code));
+      if (!inviteSnap.exists() || inviteSnap.data().used_by) {
         setError(true);
         return;
       }
 
+      const invite = inviteSnap.data() as InviteCode;
       const role = invite.role || "sitter";
 
-      await supabase.from("pet_sitters").insert({
+      await setDoc(doc(db, "pet_sitters", `${invite.pet_id}_${user.uid}`), {
+        id: `${invite.pet_id}_${user.uid}`,
         pet_id: invite.pet_id,
-        sitter_id: user.id,
+        sitter_id: user.uid,
         role,
+        invited_at: new Date().toISOString(),
       });
 
-      await supabase
-        .from("invite_codes")
-        .update({ used_by: user.id })
-        .eq("id", invite.id);
+      await updateDoc(doc(db, "invite_codes", code), { used_by: user.uid });
 
       const view = role === "owner" ? "owner" : "sitter";
       window.location.href = `${basePath}/pet?id=${invite.pet_id}&view=${view}`;
