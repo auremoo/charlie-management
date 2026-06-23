@@ -1,3 +1,5 @@
+// charlie-management — Auteur : Aurélien Moote - Moo - 2026 — Licence MIT
+
 // === Profiles ===
 
 export type Profile = {

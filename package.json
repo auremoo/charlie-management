@@ -2,6 +2,8 @@
   "name": "charlie-management",
   "version": "0.1.0",
   "private": true,
+  "author": "Aurélien Moote - Moo - 2026",
+  "license": "MIT",
   "scripts": {
     "dev": "next dev",
     "build": "next build && cp out/index.html out/404.html",

@@ -1,3 +1,4 @@
+// charlie-management — Auteur : Aurélien Moote - Moo - 2026 — Licence MIT
 "use client";
 
 import { useEffect, useState } from "react";

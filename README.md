@@ -1,3 +1,6 @@
+> Créé par Aurélien Moote - Moo - 2026. Logiciel libre (licence MIT) :
+> réutilisable à condition de conserver la mention de l'auteur.
+
 # Charlie
 
 Plateforme web de cat sitting. Créez une fiche pour votre animal, invitez un cat sitter, suivez les nouvelles en temps réel.
@@ -113,3 +116,10 @@ public/
 .github/
   workflows/            → déploiement GitHub Pages
 ```
+
+## Auteur & licence
+
+**Aurélien Moote - Moo - 2026**
+Copyright (c) 2026 Aurélien Moote ("Moo") — Licence MIT
+
+Logiciel libre : réutilisable, modifiable et redistribuable à condition de conserver la mention de l'auteur.

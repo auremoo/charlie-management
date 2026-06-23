@@ -1,3 +1,4 @@
+// charlie-management — Auteur : Aurélien Moote - Moo - 2026 — Licence MIT
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
